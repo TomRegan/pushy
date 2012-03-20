@@ -9,8 +9,6 @@
 #include "../include/request.h"
 
 #define STRTOK strtok
-#define LOG_IN printf
-#define LOG    puts
 
 unsigned char
 get_request_method(char *request_line)
@@ -42,8 +40,14 @@ get_request_uri(char *request_line)
   return STRTOK(request_line, " ");
 }
 
+/**
+ * Co-oridinates receiving a request
+ * @param req an empty request record
+ * @param peerfd the connected peer form which to read
+ * @return >=0 on success or -1 on error
+ */
 int
-read_request(struct request *req, int peerfd, struct sockaddr_in *peer_addr)
+read_request(struct request *req, int peerfd)
 {
   int req_length;
   char req_buffer[REQUEST_BUFFER_SIZE + 1];
@@ -51,11 +55,9 @@ read_request(struct request *req, int peerfd, struct sockaddr_in *peer_addr)
   req_length = read(peerfd, req_buffer, REQUEST_BUFFER_SIZE);
   if (req_length) {
     req_buffer[req_length] = '\0';
-    //LOG_IN("\n>>> %s\n\n", inet_ntoa(peer_addr->sin_addr));
-    /* LOG(req_buffer); */
   }
   req->method = get_request_method(req_buffer);
   req->uri    = get_request_uri(req_buffer);
-  printf("got %i request for %s\n", req->method,req->uri);
+
   return EXIT_SUCCESS;
 }
