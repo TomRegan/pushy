@@ -1,0 +1,7 @@
+#ifndef BUFFERS_H
+#define BUFFERS_H 1
+
+#define HTTP_MESSAGE_SIZE 1024
+#define REQUEST_BUFFER_SIZE 1024
+
+#endif /* BUFFERS_H */

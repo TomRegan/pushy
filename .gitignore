@@ -1,0 +1,6 @@
+*.o
+*~
+#*#
+httpd
+acceptance-test/
+docs/
