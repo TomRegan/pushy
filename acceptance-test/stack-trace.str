@@ -1,0 +1,76 @@
+execve("./test_runner", ["./test_runner"], [/* 48 vars */]) = 0
+brk(0)                                  = 0x1a71000
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f436b20e000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/etc/ld.so.cache", O_RDONLY)      = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=116770, ...}) = 0
+mmap(NULL, 116770, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f436b1f1000
+close(3)                                = 0
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+open("/usr/local/lib/libcgreen.so.1", O_RDONLY) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\300&\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0775, st_size=54183, ...}) = 0
+mmap(NULL, 2138840, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f436ade5000
+mprotect(0x7f436adef000, 2093056, PROT_NONE) = 0
+mmap(0x7f436afee000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x9000) = 0x7f436afee000
+close(3)                                = 0
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+open("/lib/x86_64-linux-gnu/libm.so.6", O_RDONLY) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\360>\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0644, st_size=538928, ...}) = 0
+mmap(NULL, 2633960, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f436ab61000
+mprotect(0x7f436abe4000, 2093056, PROT_NONE) = 0
+mmap(0x7f436ade3000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x82000) = 0x7f436ade3000
+close(3)                                = 0
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+open("/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0 \24\2\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=1677624, ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f436b1f0000
+mmap(NULL, 3793768, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f436a7c2000
+mprotect(0x7f436a957000, 2093056, PROT_NONE) = 0
+mmap(0x7f436ab56000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x194000) = 0x7f436ab56000
+mmap(0x7f436ab5b000, 21352, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f436ab5b000
+close(3)                                = 0
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f436b1ee000
+arch_prctl(ARCH_SET_FS, 0x7f436b1ee720) = 0
+mprotect(0x7f436ab56000, 16384, PROT_READ) = 0
+mprotect(0x7f436ade3000, 4096, PROT_READ) = 0
+mprotect(0x7f436afee000, 4096, PROT_READ) = 0
+mprotect(0x602000, 4096, PROT_READ)     = 0
+mprotect(0x7f436b210000, 4096, PROT_READ) = 0
+munmap(0x7f436b1f1000, 116770)          = 0
+brk(0)                                  = 0x1a71000
+brk(0x1a92000)                          = 0x1a92000
+getpid()                                = 8640
+msgget(0x21c0, IPC_CREAT|0666)          = 34766848
+fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 1), ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f436b20d000
+write(1, "Running \"main\"...\n", 18)   = 18
+clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f436b1ee9f0) = 8641
+rt_sigaction(SIGINT, {SIG_IGN, [INT], SA_RESTORER|SA_RESTART, 0x7f436a7f8420}, {SIG_DFL, [], 0}, 8) = 0
+wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 8641
+--- SIGCHLD (Child exited) @ 0 (0) ---
+rt_sigaction(SIGINT, {SIG_DFL, [INT], SA_RESTORER|SA_RESTART, 0x7f436a7f8420}, {SIG_IGN, [INT], SA_RESTORER|SA_RESTART, 0x7f436a7f8420}, 8) = 0
+msgrcv(34766848, {45, "\1\0\0\0\0\0\0\0"}, 8, 45, IPC_NOWAIT) = 8
+msgrcv(34766848, {45, "\3\0\0\0\0\0\0\0"}, 8, 45, IPC_NOWAIT) = 8
+msgrcv(34766848, 0x1a711b0, 8, 45, IPC_NOWAIT) = -1 ENOMSG (No message of desired type)
+clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f436b1ee9f0) = 8642
+rt_sigaction(SIGINT, {SIG_IGN, [INT], SA_RESTORER|SA_RESTART, 0x7f436a7f8420}, {SIG_DFL, [INT], SA_RESTORER|SA_RESTART, 0x7f436a7f8420}, 8) = 0
+wait4(-1, [{WIFSIGNALED(s) && WTERMSIG(s) == SIGPIPE}], 0, NULL) = 8642
+--- SIGCHLD (Child exited) @ 0 (0) ---
+rt_sigaction(SIGINT, {SIG_DFL, [INT], SA_RESTORER|SA_RESTART, 0x7f436a7f8420}, {SIG_IGN, [INT], SA_RESTORER|SA_RESTART, 0x7f436a7f8420}, 8) = 0
+msgrcv(34766848, {45, "\2\0\0\0\0\0\0\0"}, 8, 45, IPC_NOWAIT) = 8
+msgrcv(34766848, {45, "\2\0\0\0\0\0\0\0"}, 8, 45, IPC_NOWAIT) = 8
+msgrcv(34766848, 0x1a711b0, 8, 45, IPC_NOWAIT) = -1 ENOMSG (No message of desired type)
+write(1, "Exception!: http_tests -> test_m"..., 155) = 155
+msgsnd(34766848, {45, "\3\0\0\0\0\0\0\0"}, 8, 0) = 0
+msgrcv(34766848, {45, "\3\0\0\0\0\0\0\0"}, 8, 45, IPC_NOWAIT) = 8
+msgrcv(34766848, 0x1a711b0, 8, 45, IPC_NOWAIT) = -1 ENOMSG (No message of desired type)
+msgsnd(34766848, {45, "\3\0\0\0\0\0\0\0"}, 8, 0) = 0
+msgrcv(34766848, {45, "\3\0\0\0\0\0\0\0"}, 8, 45, IPC_NOWAIT) = 8
+msgrcv(34766848, 0x1a711b0, 8, 45, IPC_NOWAIT) = -1 ENOMSG (No message of desired type)
+write(1, "Completed \"main\": 1 pass, 2 fail"..., 51) = 51
+msgctl(34766848, IPC_RMID, 0)           = 0
+exit_group(1)                           = ?
