@@ -28,10 +28,8 @@ request
   char *uri;
 };
 
-int handle_request(int, struct sockaddr_in *);
-int read_request(struct request *, int, struct sockaddr_in *);
+int read_request(struct request *, int);
 unsigned char get_request_method(char *);
 char * get_request_uri(char *);
-struct http_version get_request_version(char *);
 
 #endif /* REQUEST_H */

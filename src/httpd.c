@@ -7,8 +7,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
-#include <unistd.h>
-#include "../include/handle.h"
 #include "../include/request.h"
 #include "../include/response.h"
 #include "../include/buffers.h"
@@ -67,13 +65,12 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 
   bzero(&r, sizeof(struct request));
   /* TODO refactor into a series of methods */
-  read_request(&r, peerfd, peer_addr);
-  handle_response(msg_buffer);
-  write(peerfd, msg_buffer, strlen(msg_buffer));
+  read_request(&r, peerfd);
+  send_response(peerfd, msg_buffer);
   /* TODO write to logging function */
   printf("\n<<< %s\n\n", inet_ntoa(peer_addr->sin_addr));
   puts(msg_buffer);
-  close(peerfd);
+
   return;
 }
 
@@ -96,15 +93,17 @@ serve_forever(int sockfd)
   printf("accepting connections on %i\n", PORT);
 
   while (1) {
+
     bzero(&peer_addr, sizeof (struct sockaddr_in));
     if ((peerfd = accept(sockfd, (struct sockaddr *) &peer_addr,
-			 (socklen_t *) &sin_size)) == -1)
+			 (socklen_t *) &sin_size)) == -1) {
+
       handle_error("accept");
-    else {
+	} else {
       /* thread */
       accept_request(peerfd, &peer_addr);
-
     }
+
   }
 
   return EXIT_SUCCESS;
