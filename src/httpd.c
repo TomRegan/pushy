@@ -93,15 +93,17 @@ serve_forever(int sockfd)
   printf("accepting connections on %i\n", PORT);
 
   while (1) {
+
     bzero(&peer_addr, sizeof (struct sockaddr_in));
     if ((peerfd = accept(sockfd, (struct sockaddr *) &peer_addr,
-			 (socklen_t *) &sin_size)) == -1)
+			 (socklen_t *) &sin_size)) == -1) {
+
       handle_error("accept");
-    else {
+	} else {
       /* thread */
       accept_request(peerfd, &peer_addr);
-
     }
+
   }
 
   return EXIT_SUCCESS;
