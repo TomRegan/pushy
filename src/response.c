@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "../include/response_headers.h"
 #include "../include/buffers.h"
+#include "../include/request.h"
 #include "../include/response.h"
 
 /**
@@ -14,11 +15,14 @@
  * @return >=0 on success, -1 on error
  */
 int
-send_response(int peerfd, char *message)
+send_response(int peerfd, char *message, struct request *req)
 {
 
   char time_buffer[RFC1123_TIME_LEN + 1];
-  char msg_body[] = "{\"/\":\"not-found\"}";
+  /* TODO: check the RFC for uri size and enforce if necessary */
+  char fmt_body[] = "{\"%s\":\"not-found\"}";
+  char msg_body[HTTP_MESSAGE_SIZE];
+  sprintf(msg_body, fmt_body, req->uri);
   time_t rawtime;
 
   /* include RFC1123 formatted time string */

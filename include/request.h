@@ -28,7 +28,7 @@ request
   char *uri;
 };
 
-int read_request(struct request *, int);
+int read_request(struct request*, int);
 unsigned char get_request_method(char *);
 char * get_request_uri(char *);
 

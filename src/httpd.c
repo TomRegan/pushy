@@ -64,9 +64,8 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
   struct request r;
 
   bzero(&r, sizeof(struct request));
-  /* TODO refactor into a series of methods */
   read_request(&r, peerfd);
-  send_response(peerfd, msg_buffer);
+  send_response(peerfd, msg_buffer, &r);
   /* TODO write to logging function */
   printf("\n<<< %s\n\n", inet_ntoa(peer_addr->sin_addr));
   puts(msg_buffer);
