@@ -40,7 +40,9 @@ get_request_uri(char *request_line)
   }
 
   /* TODO: rewrite so the original request is preserved */
-  return STRTOK(request_line, " ");
+  static char uri_buf[256];
+  strncpy(uri_buf, request_line, 255);
+  return STRTOK(uri_buf, " ");
 }
 
 /**
@@ -54,6 +56,7 @@ read_request(struct request *req, int peerfd)
 {
   int req_length;
   char req_buffer[REQUEST_BUFFER_SIZE + 1];
+  /* TODO: check the RFQ for uri length */
 
   req_length = read(peerfd, req_buffer, REQUEST_BUFFER_SIZE);
   if (req_length) {
