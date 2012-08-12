@@ -19,7 +19,6 @@ send_response(int peerfd, char *message, struct request *req)
 {
 
   char time_buffer[RFC1123_TIME_LEN + 1];
-  /* TODO: check the RFC for uri size and enforce if necessary */
   char fmt_body[] = "{\"%s\":\"not-found\"}";
   char msg_body[HTTP_MESSAGE_SIZE];
   sprintf(msg_body, fmt_body, req->uri);

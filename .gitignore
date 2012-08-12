@@ -4,3 +4,6 @@
 #*#
 httpd
 docs/
+test/install_cgreen_ubuntu.txt
+test/old/
+build/

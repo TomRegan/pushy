@@ -11,7 +11,7 @@
 #define STRTOK strtok
 
 unsigned char
-get_request_method(char *request_line)
+_get_request_method(char *request_line)
 {
   if (strncmp(request_line, "GET", 3) == 0) {
 
@@ -26,7 +26,7 @@ get_request_method(char *request_line)
 }
 
 char *
-get_request_uri(char *request_line)
+_get_request_uri(char *request_line)
 {
   /* The buffer includes the request method which
    * we don't want; it's pointless to call strtok
@@ -41,7 +41,7 @@ get_request_uri(char *request_line)
 
   /* TODO: rewrite so the original request is preserved */
   static char uri_buf[256];
-  strncpy(uri_buf, request_line, 255);
+  strncpy(uri_buf, request_line, sizeof(uri_buf));
   return STRTOK(uri_buf, " ");
 }
 
@@ -56,7 +56,6 @@ read_request(struct request *req, int peerfd)
 {
   int req_length;
   char req_buffer[REQUEST_BUFFER_SIZE + 1];
-  /* TODO: check the RFQ for uri length */
 
   req_length = read(peerfd, req_buffer, REQUEST_BUFFER_SIZE);
   if (req_length) {
@@ -64,8 +63,8 @@ read_request(struct request *req, int peerfd)
     req_buffer[req_length] = '\0';
   }
 
-  req->method = get_request_method(req_buffer);
-  req->uri    = get_request_uri(req_buffer);
+  req->method = _get_request_method(req_buffer);
+  req->uri    = _get_request_uri(req_buffer);
 
   return EXIT_SUCCESS;
 }
