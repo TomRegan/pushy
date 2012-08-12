@@ -3,8 +3,6 @@ program_SRCS := $(wildcard *.c)
 program_OBJS := ${program_SRCS:.c=.o}
 program_LIBS := 
 
-object_DIR := target/obj
-
 CFLAGS += -Wall
 
 ifeq ($(mode),release)
@@ -22,6 +20,3 @@ $(program_NAME): $(program_OBJS)
 
 clean:
 	@$(RM) $(program_NAME) $(program_OBJS) \#*\# *~
-
-debug: $(program_NAME)
-	define DEBUG
