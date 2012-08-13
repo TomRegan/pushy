@@ -6,4 +6,5 @@ httpd
 docs/
 test/install_cgreen_ubuntu.txt
 test/old/
+test/test_runner
 build/

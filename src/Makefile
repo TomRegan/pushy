@@ -3,7 +3,7 @@ program_SRCS := $(wildcard *.c)
 program_OBJS := ${program_SRCS:.c=.o}
 program_LIBS := 
 
-CFLAGS += -Wall
+CFLAGS += -Wall -I /opt/local/include -L/opt/local/lib
 
 ifeq ($(mode),release)
 	CFLAGS += -DRELEASE
@@ -19,4 +19,4 @@ $(program_NAME): $(program_OBJS)
 	$(CC) $(program_OBJS) -o $(program_NAME)
 
 clean:
-	@$(RM) $(program_NAME) $(program_OBJS) \#*\# *~
+	$(RM) $(program_NAME) $(program_OBJS) \#*\# *~

@@ -1,25 +1,16 @@
-test_NAME := test_runner
-test_SRCS := $(wildcard *.c)
-test_OBJS := ${test_SRCS:.c=.o}
+check_NAME := test_runner
+check_SRCS := $(wildcard *.c)
+check_OBJS := ${check_SRCS:.c=.o}
+check_LIBS :=
 
-program_SRCS := $(wildcard ../src/*.c)
-program_OBJS := ${program_SRCS:.c=.o}
+CFLAGS += -lcheck -I /opt/local/include -L /opt/local/lib
 
-CFLAGS += -lcgreen -lm
+.PHONY: all clean
 
-.PHONY: clean dependencies all copy_to_test clean_objs
+all: $(check_NAME)
 
-all: $(program_OBJS) copy_to_test $(test_NAME) clean_objs
+$(check_NAME): $(check_OBJS)
+	$(CC) $(check_OBJS) -o $(check_NAME)
 
-$(test_NAME): $(test_OBJS)
-	$(CC) $(test_OBJS) request.o $(CFLAGS) -o $(test_NAME)
-
-copy_to_test:
-	@mv $(program_OBJS) .
-	@$(RM) $(program_OBJS)
-
-clean_objs:
-	@$(RM) *.o
-
-clean: clean_objs
-	@$(RM) $(test_NAME) *~ \#*\#
+clean :
+	$(RM) $(check_NAME) $(check_OBJS) $(check_NAME)
