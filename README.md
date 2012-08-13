@@ -6,8 +6,10 @@ pushy responds to all requests with a 404 header and a bit of json,
 which is nice if you like that sort of thing.
 
 ### one of these days
-I started writing pushy to
-a) practice some TDD in C
-b) have a push server that would monitor my NAS and push updates to
+I started writing pushy to:
+
+* practice some TDD in C
+* have a push server that would monitor my NAS and push updates to
    a browser.
-... in that order.
+
+...in that order.
