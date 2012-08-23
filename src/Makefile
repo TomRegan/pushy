@@ -4,6 +4,7 @@ program_OBJS := ${program_SRCS:.c=.o}
 
 LIBDIR := ../lib/
 OBJS := request.o response.o
+TARGET := ../build
 
 ifeq ($(mode),release)
 	CFLAGS += -DRELEASE
@@ -16,7 +17,8 @@ endif
 all: $(program_NAME) deploy-libs
 
 $(program_NAME): $(program_OBJS)
-	$(CC) $(program_OBJS) -o $(program_NAME)
+	test -d $(TARGET) || mkdir $(TARGET)
+	$(CC) $(program_OBJS) -o $(TARGET)/$(program_NAME)
 
 deploy-libs:
 	test -d $(LIBDIR) || mkdir $(LIBDIR)
@@ -24,3 +26,4 @@ deploy-libs:
 
 clean:
 	$(RM) $(program_NAME) $(program_OBJS) \#*\# *~
+	$(RM) $(TARGET)/$(program_NAME)
