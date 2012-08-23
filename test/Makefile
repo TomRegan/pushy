@@ -3,14 +3,20 @@ check_SRCS := $(wildcard *.c)
 check_OBJS := ${check_SRCS:.c=.o}
 check_LIBS := -lcheck
 
-CFLAGS += -I /opt/local/include -L /opt/local/lib
+program_SRCS := $(wildcard ../src/*.c)
+program_OBJS := ${program_SRCS:.c=.o}
 
-.PHONY: all clean
+CFLAGS += -L/opt/local/lib -I/opt/local/include
 
-all: $(check_NAME)
+.PHONY: all clean copy-to-test
+
+all: $(program_OBJS) copy-to-test $(check_NAME)
 
 $(check_NAME): $(check_OBJS)
-	$(CC) -o $(check_NAME) $(check_LIBS) $(check_OBJS)
+	$(CC) $(CFLAGS) -o $(check_NAME) $(check_LIBS) $(check_OBJS) request.o
+
+copy-to-test:
+	mv $(program_OBJS) .
 
 clean :
-	$(RM) $(check_NAME) $(check_OBJS) $(check_NAME)
+	$(RM) $(check_NAME) $(check_OBJS) $(check_NAME) *.o
