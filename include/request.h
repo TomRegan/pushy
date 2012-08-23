@@ -29,7 +29,7 @@ request
 };
 
 int read_request(struct request*, int);
-unsigned char get_request_method(char *);
-char * get_request_uri(char *);
+unsigned char _get_request_method(char *);
+char * _get_request_uri(char *);
 
 #endif /* REQUEST_H */

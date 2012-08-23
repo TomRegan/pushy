@@ -3,8 +3,6 @@ program_SRCS := $(wildcard *.c)
 program_OBJS := ${program_SRCS:.c=.o}
 program_LIBS := 
 
-CFLAGS += -Wall -I /opt/local/include -L/opt/local/lib
-
 ifeq ($(mode),release)
 	CFLAGS += -DRELEASE
 else
