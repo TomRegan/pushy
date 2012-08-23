@@ -11,13 +11,13 @@ CFLAGS += -L/opt/local/lib -I/opt/local/include -I../../include
 
 .PHONY: all clean copy-to-test
 
-all: $(check_NAME) 
+all: $(check_NAME)
 
 $(check_NAME): $(check_OBJS)
 	test -d $(TARGET) || mkdir $(TARGET)
 	$(CC) $(CFLAGS) -o $(TARGET)/$(check_NAME) $(check_LIBS) $(check_OBJS) $(program_OBJS)
 
-test: all
+check: all
 	$(TARGET)/./test_runner
 
 clean :

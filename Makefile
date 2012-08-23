@@ -1,19 +1,19 @@
 TARGET := build
 
-all: httpd unit-test acceptance-test
+all: httpd unit-test acceptance-test check
 
 httpd:
 	+$(MAKE) -C src
 
 unit-test:
-	+$(MAKE) -C test/unit-test test
+	+$(MAKE) -C test/unit-test
 
 acceptance-test:
 	+$(MAKE) -C test/acceptance-test
 
 check:
 	+$(MAKE) -C test/unit-test clean
-	+$(MAKE) -C test/unit-test test
+	+$(MAKE) -C test/unit-test check
 
 clean:
 	+$(MAKE) -C src clean
