@@ -12,7 +12,6 @@ acceptance-test:
 	+$(MAKE) -C test/acceptance-test
 
 check:
-	+$(MAKE) -C test/unit-test clean
 	+$(MAKE) -C test/unit-test check
 
 clean:
