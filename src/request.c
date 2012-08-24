@@ -49,7 +49,7 @@ _get_request_uri(char *request_line)
  * Co-oridinates receiving a request
  * @param req an empty request record
  * @param peerfd the connected peer form which to read
- * @return EXIT_SUCCESS on success or EXIT_FAILURE
+ * @return >=0 on success or -1 on error
  */
 int
 read_request(struct request *req, int peerfd)
