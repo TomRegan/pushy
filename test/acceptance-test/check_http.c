@@ -100,7 +100,7 @@ START_TEST(test_error_not_found_sends_valid_http_header_and_non_blank_message)
   write(sockfd, header, strlen(header));
   read(sockfd, buf, BUFFER_S);
   
-  /* the response we expect is the message header includeing the time, ie
+  /* the response we expect is the message header including the time, i.e.
    *      (length of time buffer + length of response template)
    * the +2 is to account for the fact that there is a substitution in the
    * response template; %s is replaced with the date leaving two fewer
@@ -109,7 +109,7 @@ START_TEST(test_error_not_found_sends_valid_http_header_and_non_blank_message)
   get_time(time_buffer); 
   response_len = strlen(buf)-(strlen(response_template)+strlen(time_buffer))+2;
 
-  /* we need to modufy expect_response with the correct time
+  /* we need to modify expect_response with the correct time
    * --
    * predictably there's a case where this test will fail
    * because the time has rolled over 1 second between the
