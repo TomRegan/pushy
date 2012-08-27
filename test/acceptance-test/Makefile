@@ -13,7 +13,7 @@ all: $(check_NAME)
 
 $(check_NAME): $(check_OBJS)
 	test -d $(TARGET) || mkdir $(TARGET)
-	$(CC) $(check_LIBS) $(check_OBJS) $(CFLAGS) -o $(TARGET)/$(check_NAME)
+	$(CC) -o $(TARGET)/$(check_NAME) $(CFLAGS) $(check_OBJS) $(check_LIBS)
 
 clean:
 	$(RM) $(TARGET)/$(check_NAME) *.o

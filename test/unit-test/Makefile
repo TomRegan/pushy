@@ -15,7 +15,7 @@ all: $(check_NAME)
 
 $(check_NAME): $(check_OBJS)
 	test -d $(TARGET) || mkdir $(TARGET)
-	$(CC) $(CFLAGS) -o $(TARGET)/$(check_NAME) $(check_LIBS) $(check_OBJS) $(program_OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET)/$(check_NAME) $(check_OBJS) $(program_OBJS) $(check_LIBS)
 
 check: all
 	$(TARGET)/./test_runner
