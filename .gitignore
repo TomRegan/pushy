@@ -1,9 +1,13 @@
 *.o
 *.a
+*.so
+*.so.*
 *.dylib
+*.out
 *~
 .*
 #*#
+lib/
 httpd
 docs/
 test_runner
