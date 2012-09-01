@@ -36,7 +36,7 @@ _get_request_uri(char *request_line)
    */
   while (*request_line != ' ') {
 
-	  request_line++;
+    request_line++;
   }
 
   /* TODO: rewrite so the original request is preserved */
@@ -66,5 +66,5 @@ read_request(struct request *req, int peerfd)
   req->method = _get_request_method(req_buffer);
   req->uri    = _get_request_uri(req_buffer);
 
-  return EXIT_SUCCESS;
+  return (int) strnlen(req->uri, 256);
 }

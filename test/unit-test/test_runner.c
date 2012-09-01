@@ -1,22 +1,29 @@
 #include <check.h>
 #include "check_request.c"
+#include "check_response.c"
 
 Suite *
 request_suite(void)
 {
-	Suite *s = suite_create("request");
+	Suite *s = suite_create("Test Runner");
 
-	TCase *tc_core = tcase_create("Core");
+	TCase *tc_request = tcase_create("request");
 
-	tcase_add_test(tc_core, test_request_url_is_parsed);
-	tcase_add_test(tc_core, test_method_and_uri_are_returned);
-	tcase_add_test(tc_core, test_get_request_sets_correct_flag);
-	tcase_add_test(tc_core, test_post_request_sets_correct_flag);
-	tcase_add_test(tc_core, test_unknown_request_sets_correct_flag);
-	tcase_add_test(tc_core, test_empty_request_sets_correct_flag);
-	tcase_add_test(tc_core, test_non_ascii_sets_correct_flag);
+	tcase_add_test(tc_request, test_request_url_is_parsed);
+	tcase_add_test(tc_request, test_method_and_uri_are_returned);
+	tcase_add_test(tc_request, test_get_request_sets_correct_flag);
+	tcase_add_test(tc_request, test_post_request_sets_correct_flag);
+	tcase_add_test(tc_request, test_unknown_request_sets_correct_flag);
+	tcase_add_test(tc_request, test_empty_request_sets_correct_flag);
+	tcase_add_test(tc_request, test_non_ascii_sets_correct_flag);
 
-	suite_add_tcase(s, tc_core);
+	TCase *tc_response = tcase_create("response");
+	tcase_add_test(tc_response, test_uritoolong_sets_correct_message);
+	tcase_add_test(tc_response, test_not_found_sets_correct_message);
+	tcase_add_test(tc_response, test_long_uri_request_returns_414);
+
+	suite_add_tcase(s, tc_request);
+	suite_add_tcase(s, tc_response);
 
 	return s;
 }

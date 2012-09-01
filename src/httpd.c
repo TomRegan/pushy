@@ -21,7 +21,7 @@
  *
  * opens a listening socket
  *
- * \return  int  file descriptor of a new socket
+ * @return  int  file descriptor of a new socket
  */
 static int
 init_server()
@@ -52,10 +52,10 @@ init_server()
  *
  * handles socket requests
  *
- * \param  request  listening socket descriptor
- * \param  *peer_addr  sockaddr_in struct
+ * @param  request  listening socket descriptor
+ * @param  *peer_addr  sockaddr_in struct
  *
- * \returns  void
+ * @returns  void
  */
 void
 accept_request(int peerfd, struct sockaddr_in *peer_addr)
@@ -64,8 +64,19 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
   struct request r;
 
   bzero(&r, sizeof(struct request));
-  read_request(&r, peerfd);
-  send_response(peerfd, msg_buffer, &r);
+  /* TODO this is a silly way of checking length. instead defer to a
+   * rules method in request.c that validates all the conditions, and 
+   * simply strlen the req->uri. Keeping rules checking out of http
+   * will improve the transition to threading.
+   */
+  int uri_len = read_request(&r, peerfd);
+  if (uri_len > 100) {
+	  send_response(peerfd, msg_buffer, &r, respond_uritoolong);
+  }
+  else
+  {
+	  send_response(peerfd, msg_buffer, &r, respond_notfound);
+  }
   /* TODO write to logging function */
   printf("\n<<< %s\n\n", inet_ntoa(peer_addr->sin_addr));
   puts(msg_buffer);
@@ -78,9 +89,9 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
  *
  * runs in an accept loop responding to connections
  *
- * \param  sockfd  file descriptor of a listening socket
+ * @param  sockfd  file descriptor of a listening socket
  *
- * \return  int  EXIT_SUCCESS|EXIT_FAILURE
+ * @return  int  EXIT_SUCCESS|EXIT_FAILURE
  */
 static int
 serve_forever(int sockfd)
