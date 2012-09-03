@@ -18,9 +18,7 @@ request_suite(void)
 	tcase_add_test(tc_request, test_non_ascii_sets_correct_flag);
 
 	TCase *tc_response = tcase_create("response");
-	tcase_add_test(tc_response, test_uritoolong_sets_correct_message);
-	tcase_add_test(tc_response, test_not_found_sets_correct_message);
-	tcase_add_test(tc_response, test_long_uri_request_returns_414);
+	tcase_add_test(tc_request, test_generate_json_body);
 
 	suite_add_tcase(s, tc_request);
 	suite_add_tcase(s, tc_response);
@@ -34,7 +32,7 @@ main(void)
 	int number_failed;
 	Suite *s = request_suite();
 	SRunner *sr = srunner_create(s);
-	srunner_run_all(sr, CK_NORMAL);
+	srunner_run_all(sr, CK_VERBOSE);
 	number_failed = srunner_ntests_failed(sr);
 	srunner_free(sr);
 
