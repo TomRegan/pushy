@@ -3,8 +3,19 @@
 
 #define RFC1123_TIME "%a, %d %b %Y %H:%M:%S GMT"
 #define RFC1123_TIME_LEN 30
-void respond_uritoolong(char * msg_body, struct request *req);
-void respond_notfound(char * msg_body, struct request *req);
-int send_response(int, char*, struct request*, void (*request_fp)(char *, struct request *) );
+
+/* error status messages */
+#define SNOTFOUND "not-found"
+#define SURITOOLONG "uri too long"
+
+/**
+ * Builds a response string and sends it to a peer
+ * @param peerfd descriptor of the peer
+ * @param msg_buf a buffer that will hold the complete message
+ * @param msg_content the message content
+ * @param r an http request struct
+ * @return >=0 on success, -1 on error
+ */
+int send_response(int, char*, char*, struct request*);
 
 #endif /* RESPONSE_H */

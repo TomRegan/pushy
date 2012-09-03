@@ -71,11 +71,11 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
    */
   int uri_len = read_request(&r, peerfd);
   if (uri_len > 100) {
-	  send_response(peerfd, msg_buffer, &r, respond_uritoolong);
+	  send_response(peerfd, msg_buffer, SURITOOLONG, &r);
   }
   else
   {
-	  send_response(peerfd, msg_buffer, &r, respond_notfound);
+	  send_response(peerfd, msg_buffer, SNOTFOUND, &r);
   }
   /* TODO write to logging function */
   printf("\n<<< %s\n\n", inet_ntoa(peer_addr->sin_addr));

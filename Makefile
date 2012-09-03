@@ -6,16 +6,16 @@ httpd:
 	+$(MAKE) -C src
 
 unit-test:
-	+$(MAKE) -C test/unit
+	+$(MAKE) -C tests/unit
 
 acceptance-test:
-	+$(MAKE) -C test/acceptance
+	+$(MAKE) -C tests/acceptance
 
-check:
-	+$(MAKE) -C test/unit check
+check: all
+	+$(MAKE) -C tests/unit check
 
 clean:
 	+$(MAKE) -C src clean
-	+$(MAKE) -C test/unit clean
-	+$(MAKE) -C test/acceptance clean
+	+$(MAKE) -C tests/unit clean
+	+$(MAKE) -C tests/acceptance clean
 	test ! -d $(TARGET) || rmdir $(TARGET)
