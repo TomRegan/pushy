@@ -1,6 +1,6 @@
 TARGET := build
 
-all: httpd unit-test acceptance-test check
+all: httpd acceptance-test unit-test
 
 httpd:
 	+$(MAKE) -C src

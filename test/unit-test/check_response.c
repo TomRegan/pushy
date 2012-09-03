@@ -12,9 +12,13 @@ END_TEST
 
 START_TEST (test_not_found_sets_correct_message)
 {
-  /* char fmt_body[] = "{\"%s\":\"not-found\"}"; */
-  /* sprintf(msg_body, fmt_body, req->uri); */
-  fail("not implemented");
+  char resp_buf[128];
+  struct request r;
+  bzero(&r, sizeof(struct request));
+  r.method = MGET;
+  r.uri    = "/";
+  respond_notfound(resp_buf, &r);
+  fail_unless(0 == strcmp("{\"/\":\"not-found\"}", resp_buf));
 }
 END_TEST
 
