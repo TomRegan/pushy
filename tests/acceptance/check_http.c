@@ -34,9 +34,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include <request.h>
-#include <response.h>
-#include <buffers.h>
+#include "../../include/http_protocol_handler.h"
+#include "../../include/buffers.h"
 
 #define PORT 55080
 #define LOCALADDR "127.0.0.1"

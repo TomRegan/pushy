@@ -1,13 +1,13 @@
 #include <check.h>
-#include "check_request.c"
-#include "check_response.c"
+
+#include "check_http_protocol_handler.c"
 
 Suite *
 request_suite(void)
 {
 	Suite *s = suite_create("Test Runner");
 
-	TCase *tc_request = tcase_create("request");
+	TCase *tc_request = tcase_create("http_protocol_handler");
 
 	tcase_add_test(tc_request, test_request_url_is_parsed);
 	tcase_add_test(tc_request, test_method_and_uri_are_returned);
@@ -16,12 +16,9 @@ request_suite(void)
 	tcase_add_test(tc_request, test_unknown_request_sets_correct_flag);
 	tcase_add_test(tc_request, test_empty_request_sets_correct_flag);
 	tcase_add_test(tc_request, test_non_ascii_sets_correct_flag);
-
-	TCase *tc_response = tcase_create("response");
 	tcase_add_test(tc_request, test_generate_json_body);
 
 	suite_add_tcase(s, tc_request);
-	suite_add_tcase(s, tc_response);
 
 	return s;
 }

@@ -3,7 +3,7 @@ program_SRCS := $(wildcard *.c)
 program_OBJS := ${program_SRCS:.c=.o}
 
 LIBDIR := ../lib/
-OBJS := request.o response.o
+OBJS := http_protocol_handler.o
 TARGET := ../build
 
 ifeq ($(mode),release)

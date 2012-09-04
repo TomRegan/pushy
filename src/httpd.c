@@ -7,8 +7,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
-#include "../include/request.h"
-#include "../include/response.h"
+#include "../include/http_protocol_handler.h"
 #include "../include/buffers.h"
 
 #define PORT 55080

@@ -1,6 +1,11 @@
+#include <stdio.h>
 #include <check.h>
-/* #include "../include/request.h" */
-#include <request.h>
+#include "../../include/http_protocol_handler.h"
+
+/* private functions */
+void _insert_json_body(char*, struct request*, char*);
+char * _get_request_uri(char*);
+unsigned char _get_request_method(char *);
 
 START_TEST (test_request_url_is_parsed)
 {
@@ -95,5 +100,18 @@ START_TEST (test_non_ascii_sets_correct_flag)
   char buf[3] = {(char)6, (char)1, '\0'};
   method = _get_request_method(buf);
   fail_unless(method == MUNKNOWN);
+}
+END_TEST
+
+START_TEST (test_generate_json_body)
+{
+	char msg_body[1024];
+	char* msg_content = "unit-test";
+	struct request req = {
+		.method = MGET,
+		.uri = "/"
+	};
+	_insert_json_body(msg_body, &req, msg_content);
+	fail_unless(0 == strcmp("{\"/\":\"unit-test\"}", msg_body));
 }
 END_TEST
