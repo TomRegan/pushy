@@ -15,92 +15,90 @@
 void
 _insert_json_body(char *msg_body, struct request *req, char *msg_content)
 {
-  char fmt_body[] = "{\"%s\":\"%s\"}";
-  sprintf(msg_body, fmt_body, req->uri, msg_content);
+	char		fmt_body  [] = "{\"%s\":\"%s\"}";
+
+	sprintf(msg_body, fmt_body, req->uri, msg_content);
 }
+
 unsigned char
 _get_request_method(char *request_line)
 {
-  if (strncmp(request_line, "GET", 3) == 0) {
+	if (strncmp(request_line, "GET", 3) == 0) {
 
-    return MGET;
-  }
-  if (strncmp(request_line, "POST", 4) == 0) {
+		return MGET;
+	}
 
-    return MPOST;
-  }
+	if (strncmp(request_line, "POST", 4) == 0) {
 
-  return MUNKNOWN;
+		return MPOST;
+	}
+
+	return MUNKNOWN;
 }
 
-char *
+char*
 _get_request_uri(char *request_line)
 {
-  /* The buffer includes the request method which
-   * we don't want; it's pointless to call strtok
-   * just to get rid of the method so we'll skip
-   * over it to the next space. HTTP says we will
-   * *definitely* only have one space, *snigger*
-   */
-  while (*request_line != ' ') {
+	/*
+	 * The buffer includes the request method which we don't want; it's
+	 * pointless to call strtok just to get rid of the method so we'll
+	 * skip over it to the next space. HTTP says we will *definitely*
+	 * only have one space, *snigger*
+	 */
+	while (*request_line != ' ') {
 
-    request_line++;
-  }
+		request_line++;
+	}
 
-  /* TODO: rewrite so the original request is preserved */
-  static char uri_buf[256];
-  strncpy(uri_buf, request_line, sizeof(uri_buf));
-  return STRTOK(uri_buf, " ");
+	/* TODO: rewrite so the original request is preserved */
+	static char	uri_buf[MAX_URI_LEN];
+
+	strncpy(uri_buf, request_line, sizeof(uri_buf));
+
+	return STRTOK(uri_buf, " ");
 }
 
 void
 _timestamp_message(char *msg_buf, char *header, char *msg_body)
 {
-  char time_buffer[RFC1123_TIME_LEN + 1];
-  time_t rawtime;
+	char		time_buffer[RFC1123_TIME_LEN + 1];
+	time_t		rawtime;
 
-  /* include RFC1123 formatted time string */
-  time(&rawtime);
-  strftime(time_buffer, RFC1123_TIME_LEN, RFC1123_TIME, gmtime(&rawtime));
-  time_buffer[RFC1123_TIME_LEN] = '\0';
-  sprintf(msg_buf, header, strlen(msg_body), time_buffer);
+	/* include RFC1123 formatted time string */
+	time(&rawtime);
+	strftime(time_buffer, RFC1123_TIME_LEN, RFC1123_TIME, gmtime(&rawtime));
+	time_buffer[RFC1123_TIME_LEN] = '\0';
+	sprintf(msg_buf, header, strlen(msg_body), time_buffer);
 }
 
 int
-send_response(int peerfd, char *msg_buf, char *msg_content,
-		struct request *req)
+send_response(int peerfd, char *msg_buf, char *msg_content, struct request *req)
 {
 
-  char msg_body[HTTP_MESSAGE_SIZE];
+	char		msg_body  [HTTP_MESSAGE_SIZE];
 
-  _insert_json_body(msg_body, req, msg_content);
-  _timestamp_message(msg_buf, ERROR_NOT_FOUND, msg_body);
-  strncat(msg_buf, msg_body, HTTP_MESSAGE_SIZE);
+	_insert_json_body(msg_body, req, msg_content);
+	_timestamp_message(msg_buf, ERROR_NOT_FOUND, msg_body);
+	strncat(msg_buf, msg_body, HTTP_MESSAGE_SIZE);
 
-  write(peerfd, msg_buf, strlen(msg_buf));
-  return close(peerfd);
+	write(peerfd, msg_buf, strlen(msg_buf));
+
+	return close(peerfd);
 }
 
-/**
- * Co-oridinates receiving a request
- * @param req an empty request record
- * @param peerfd the connected peer form which to read
- * @return EXIT_SUCCESS on success or EXIT_FAILURE
- */
 int
 read_request(struct request *req, int peerfd)
 {
-  int req_length;
-  char req_buffer[REQUEST_BUFFER_SIZE + 1];
+	char		req_buffer[REQUEST_BUFFER_SIZE + 1];
+	int			req_length = read(peerfd, req_buffer, REQUEST_BUFFER_SIZE);
 
-  req_length = read(peerfd, req_buffer, REQUEST_BUFFER_SIZE);
-  if (req_length) {
+	if (req_length) {
 
-    req_buffer[req_length] = '\0';
-  }
+		req_buffer[req_length] = '\0';
+	}
 
-  req->method = _get_request_method(req_buffer);
-  req->uri    = _get_request_uri(req_buffer);
+	req->method = _get_request_method(req_buffer);
+	req->uri = _get_request_uri(req_buffer);
 
-  return (int) strnlen(req->uri, 256);
+	return (int)strnlen(req->uri, MAX_URI_LEN);
 }

@@ -59,6 +59,12 @@ request
   char *uri;
 };
 
+/**
+ * Co-oridinates receiving a request
+ * @param req an empty request record
+ * @param peerfd the connected peer form which to read
+ * @return The length of the uri up to (MAX_URI_LEN)
+ */
 int read_request(struct request*, int);
 
 /**
