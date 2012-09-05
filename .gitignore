@@ -6,6 +6,7 @@
 *.out
 *~
 .*
+*.BAK
 #*#
 lib/
 httpd

@@ -10,7 +10,7 @@ request_suite(void)
 
 	tcase_add_checked_fixture(tc_core, set_up, tear_down);
 	tcase_add_test(tc_core, test_long_uri_gets_414_response);
-	tcase_add_test(tc_core, test_error_not_found_sends_valid_http_header_and_non_blank_message);
+	tcase_add_test(tc_core, test_error_not_found_gets_404_response);
 	/* TODO: investigate below test: failing */
 	/*tcase_add_test(tc_core, test_malformed_request_uri_gets_error_bad_request);*/
 
