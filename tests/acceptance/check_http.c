@@ -34,7 +34,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include "../../include/http_protocol_handler.h"
+#include "../../include/protocol_handler.h"
 #include "../../include/buffers.h"
 
 #define PORT 55080

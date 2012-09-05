@@ -19,3 +19,4 @@ clean:
 	+$(MAKE) -C tests/unit clean
 	+$(MAKE) -C tests/acceptance clean
 	test ! -d $(TARGET) || rmdir $(TARGET)
+	test ! -d lib/ || rm  lib/*.o

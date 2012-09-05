@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 
 #include "../include/buffers.h"
-#include "../include/http_protocol_handler.h"
+#include "../include/protocol_handler.h"
 #include "../include/response_headers.h"
 
 #define STRTOK strtok

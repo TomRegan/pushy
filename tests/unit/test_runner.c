@@ -1,13 +1,13 @@
 #include <check.h>
 
-#include "check_http_protocol_handler.c"
+#include "check_protocol_handler.c"
 
 Suite *
 request_suite(void)
 {
 	Suite *s = suite_create("Test Runner");
 
-	TCase *tc_request = tcase_create("http_protocol_handler");
+	TCase *tc_request = tcase_create("protocol_handler");
 
 	tcase_add_test(tc_request, test_request_url_is_parsed);
 	tcase_add_test(tc_request, test_method_and_uri_are_returned);

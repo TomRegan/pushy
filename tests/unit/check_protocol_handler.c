@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <check.h>
-#include "../../include/http_protocol_handler.h"
+#include "../../include/protocol_handler.h"
 
 /* private functions */
 void _insert_json_body(char*, struct request*, char*);
