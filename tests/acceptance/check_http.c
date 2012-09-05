@@ -74,7 +74,53 @@ set_up()
 
 START_TEST(test_long_uri_gets_414_response)
 {
-	fail("method not implemented");
+	const int	URI_LEN = 1032;
+	int			result = -1; /* fail */
+	char		header[2*BUFFER_S];
+	char		*header_fmt;
+	char		buf[8*BUFFER_S];
+	char		time_buffer[RFC1123_TIME_LEN + 1];
+	char		uri_buffer[URI_LEN];
+	char		response_template[HTTP_MESSAGE_SIZE] = "\
+HTTP/1.1 414 Request-URI Too Long\r\n\
+Content-Length: 1061\r\n\
+Content-Type: text/html\r\n\
+Server: Pushy/0.0.1-1\r\n\
+Date: %s\r\n\
+\r\n\
+{\"%s\":\"request-uri-too-long\"}";
+	char		expect_response[HTTP_MESSAGE_SIZE];
+	size_t		expect_response_len;
+
+	bzero(uri_buffer, sizeof (uri_buffer));
+	bzero(header, sizeof (header));
+	header_fmt = "GET /%s HTTP/1.1";
+
+	/*
+	 * to trigger a 414 we need to present the server with an arbitrarily
+	 * long uri. Pushy will server any request up to 1Kb in length.
+	 * the following will generate a uri which is slightly larget than
+	 * pushy's maximum.
+	 */
+	int			i;
+	for (i = 0; i < 100; ++i) {
+
+		uri_buffer[i] = 'a';
+	}
+	snprintf(header, (size_t)2*BUFFER_S, header_fmt, uri_buffer);
+
+	bzero(buf, BUFFER_S);
+	write(sockfd, header, strlen(header));
+	read(sockfd, buf, BUFFER_S);
+
+	get_time(time_buffer);
+	sprintf(expect_response, response_template, time_buffer);
+	expect_response_len = strlen(expect_response);
+
+	result = strncmp(buf, expect_response, 8*BUFFER_S);
+	printf("wanted: %s\n", expect_response);
+	printf("got: %s\n", buf);
+	fail_unless(0 == result);
 }
 END_TEST
 
@@ -82,12 +128,12 @@ END_TEST
 START_TEST(test_error_not_found_gets_404_response)
 {
 
-	/* this should return a valid http header and non-blank message */
+	/* should return a valid http header and non-blank message */
 
 	int			result;
 
 	char		*header = "GET / HTTP/1.1";
-	char		buf       [BUFFER_S];
+	char		buf[BUFFER_S];
 	char		time_buffer[RFC1123_TIME_LEN + 1];
 	char		response_template[HTTP_MESSAGE_SIZE] = "\
 HTTP/1.1 404 Not Found\r\n\
@@ -106,10 +152,9 @@ Date: %s\r\n\
 
 	/*
 	 * the response we expect is the message header including the time,
-	 * i.e. (length of time buffer + length of response template) the +2
-	 * is to account for the fact that there is a substitution in the
-	 * response template; %s is replaced with the date leaving two fewer
-	 * characters than the length of both buffers combined
+	 * i.e. (length of time buffer + length of response template),
+	 * plus a java script object literal map containing the uri and
+	 * the status "not-found".
 	 */
 	get_time(time_buffer);
 
@@ -121,6 +166,7 @@ Date: %s\r\n\
 	 * it would be polite to fix this, but based on a loop of tests I ran
 	 * I estimate this is a problem about 1/500 times.
 	 */
+	/* TODO: sprintf -> snprintf */
 	sprintf(expect_response, response_template, time_buffer);
 	expect_response_len = strlen(expect_response);
 
@@ -129,8 +175,6 @@ Date: %s\r\n\
 	 * string but ignore any fluff like html
 	 */
 	result = strncmp(buf, expect_response, expect_response_len);
-	printf("got: %s\n", buf);
-	printf("wanted: %s\n", expect_response);
 	fail_unless(result == 0);
 }
 END_TEST
@@ -138,16 +182,19 @@ END_TEST
 #define NREQS 4
 START_TEST(test_malformed_request_uri_gets_error_bad_request)
 {
-	char           *requests[NREQS] = {"GET // HTTP/1.1",
+	char           *requests[NREQS] = {
+		"GET // HTTP/1.1",
 		"POST / foo HTTP/1.1",
 		"PUT foo HTTP/1.1",
-	"HEAD /foo/bar /baz HTTP/1.1"};
-	char		response_template[HTTP_MESSAGE_SIZE] = "HTTP/1.1 400 Bad Request\r\n\
+		"HEAD /foo/bar /baz HTTP/1.1"};
+	char		response_template[HTTP_MESSAGE_SIZE] = "\
+HTTP/1.1 400 Bad Request\r\n\
 Content-Length: %zu\r\n\
 Content-Type: text/html\r\n\
 Server: Pushy/0.0.1-1\r\n\
 Date: %s\r\n\
-\r\n\r\n";
+\r\n\r\n\
+{\"%s\":\"bad-request\"}";
 	char		expect_response[HTTP_MESSAGE_SIZE];
 	char		time_buffer[RFC1123_TIME_LEN + 1];
 	char		buf       [BUFFER_S];
