@@ -102,7 +102,7 @@ Date: %s\r\n\
 	 * the following will generate a uri which is slightly larget than
 	 * pushy's maximum.
 	 */
-	int			i;
+	int i;
 	for (i = 0; i < 100; ++i) {
 
 		uri_buffer[i] = 'a';
@@ -132,22 +132,22 @@ START_TEST(test_error_not_found_gets_404_response)
 
 	int			result;
 
-	char		*header = "GET / HTTP/1.1";
+	char		*request = "GET / HTTP/1.1";
 	char		buf[BUFFER_S];
 	char		time_buffer[RFC1123_TIME_LEN + 1];
 	char		response_template[HTTP_MESSAGE_SIZE] = "\
 HTTP/1.1 404 Not Found\r\n\
-Content-Length: 17\r\n\
+Content-Length: 19\r\n\
 Content-Type: text/html\r\n\
 Server: Pushy/0.0.1-1\r\n\
 Date: %s\r\n\
 \r\n\
-{\"/\":\"not-found\"}";
+{\"/\":\"not-found\"}\r\n";
 	char		expect_response[HTTP_MESSAGE_SIZE];
 	size_t		expect_response_len;
 
 	bzero(buf, BUFFER_S);
-	write(sockfd, header, strlen(header));
+	write(sockfd, request, strlen(request));
 	read(sockfd, buf, BUFFER_S);
 
 	/*
@@ -182,7 +182,7 @@ END_TEST
 #define NREQS 4
 START_TEST(test_malformed_request_uri_gets_error_bad_request)
 {
-	char           *requests[NREQS] = {
+	char		*requests[NREQS] = {
 		"GET // HTTP/1.1",
 		"POST / foo HTTP/1.1",
 		"PUT foo HTTP/1.1",
@@ -199,7 +199,7 @@ Date: %s\r\n\
 	char		time_buffer[RFC1123_TIME_LEN + 1];
 	char		buf       [BUFFER_S];
 	size_t		response_len, i;
-	int		result;
+	int			result;
 
 	/* this is being debuggered, presently it doesn't work */
 	for (i = 0; i < NREQS; ++i) {

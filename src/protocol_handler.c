@@ -15,7 +15,7 @@
 void
 _insert_json_body(char *msg_body, struct request *req, char *msg_content)
 {
-	char		fmt_body  [] = "{\"%s\":\"%s\"}";
+	char		fmt_body  [] = "{\"%s\":\"%s\"}\r\n";
 
 	sprintf(msg_body, fmt_body, req->uri, msg_content);
 }

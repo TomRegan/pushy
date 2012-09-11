@@ -112,6 +112,6 @@ START_TEST (test_generate_json_body)
 		.uri = "/"
 	};
 	_insert_json_body(msg_body, &req, msg_content);
-	fail_unless(0 == strcmp("{\"/\":\"unit-test\"}", msg_body));
+	fail_unless(0 == strcmp("{\"/\":\"unit-test\"}\r\n", msg_body));
 }
 END_TEST
