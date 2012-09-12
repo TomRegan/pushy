@@ -56,7 +56,7 @@ struct
 request
 {
   unsigned char method;
-  char *uri;
+  char uri[MAX_URI_LEN];
 };
 
 /**

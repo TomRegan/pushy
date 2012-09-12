@@ -98,7 +98,7 @@ read_request(struct request *req, int peerfd)
 	}
 
 	req->method = _get_request_method(req_buffer);
-	req->uri = _get_request_uri(req_buffer);
+	strncpy(req->uri, _get_request_uri(req_buffer),sizeof(req->uri)); 
 
-	return (int)strnlen(req->uri, MAX_URI_LEN);
+	return (int) strnlen(req->uri, sizeof(req->uri));
 }

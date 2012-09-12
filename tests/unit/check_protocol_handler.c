@@ -27,7 +27,7 @@ START_TEST (test_method_and_uri_are_returned)
 
   bzero(&r, sizeof(struct request));
   r.method = _get_request_method(request);
-  r.uri = _get_request_uri(request);
+  strncpy(r.uri, _get_request_uri(request), sizeof(r.uri));
   fail_unless(MGET == r.method);
   fail_unless(0 == strcmp(r.uri, "/foo/zen/happy.html"));
 }
