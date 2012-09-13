@@ -68,6 +68,7 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
    * simply strlen the req->uri. Keeping rules checking out of http
    * will improve the transition to threading.
    */
+  printf("\n>>> %s\n\n", inet_ntoa(peer_addr->sin_addr));
   int uri_len = read_request(&r, peerfd);
   char *status;
   if (uri_len > 100) {

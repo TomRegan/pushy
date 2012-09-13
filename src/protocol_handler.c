@@ -1,3 +1,25 @@
+/* Copyright 2012 Tom Regan <code.tom.regan@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+/*
+ * @file  protocol_handler.c
+ * @brief functions to get and process http requests
+ * @author  Tom Regan <code.tom.regan@gmail.com>
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,16 +30,50 @@
 
 #include "../include/buffers.h"
 #include "../include/protocol_handler.h"
-#include "../include/response_headers.h"
 
 #define STRTOK strtok
 
 void
-_insert_json_body(char *msg_body, struct request *req, char *msg_content)
+_start_message(char *msg_buf)
 {
-	char		fmt_body  [] = "{\"%s\":\"%s\"}\r\n";
+	bzero(msg_buf, HTTP_MESSAGE_SIZE);
+	strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_MESSAGE_SIZE);
+}
 
-	sprintf(msg_body, fmt_body, req->uri, msg_content);
+
+void
+_insert_content_length(char *msg_buf, char *msg_body)
+{
+	char		*fmt_buf = "Content-Length: %zu\r\n";
+	char		tmp_buf [HTTP_MESSAGE_SIZE];
+	snprintf(tmp_buf, sizeof(tmp_buf), fmt_buf, strnlen(msg_body, HTTP_MESSAGE_SIZE));
+	strncat(msg_buf, tmp_buf, HTTP_MESSAGE_SIZE);
+}
+
+void
+_finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
+{
+	char		*fmt_buf = "{\"%s\":\"%s\"}\r\n";
+	sprintf(msg_body, fmt_buf, req->uri, rsp_str);
+}
+
+void
+_insert_date(char *msg_buf)
+{
+	time_t		rawtime;
+	char		time_buffer[RFC1123_TIME_LEN + 1];
+	char		tmp_buf [HTTP_MESSAGE_SIZE];
+	char		*fmt_buf = "Date: %s\r\n\r\n";
+	time(&rawtime);
+	strftime(time_buffer, RFC1123_TIME_LEN, RFC1123_TIME, gmtime(&rawtime));
+	snprintf(tmp_buf, sizeof(tmp_buf), fmt_buf, time_buffer);
+	strncat(msg_buf, tmp_buf, HTTP_MESSAGE_SIZE);
+}
+
+void
+_finalise_message(char *msg_buf, char *msg_body)
+{
+	strncat(msg_buf, msg_body, HTTP_MESSAGE_SIZE);
 }
 
 unsigned char
@@ -58,28 +114,19 @@ _get_request_uri(char *request_line)
 	return STRTOK(uri_buf, " ");
 }
 
-void
-_timestamp_message(char *msg_buf, char *header, char *msg_body)
-{
-	char		time_buffer[RFC1123_TIME_LEN + 1];
-	time_t		rawtime;
-
-	/* include RFC1123 formatted time string */
-	time(&rawtime);
-	strftime(time_buffer, RFC1123_TIME_LEN, RFC1123_TIME, gmtime(&rawtime));
-	time_buffer[RFC1123_TIME_LEN] = '\0';
-	sprintf(msg_buf, header, strlen(msg_body), time_buffer);
-}
-
 int
-send_response(int peerfd, char *msg_buf, char *msg_content, struct request *req)
+send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
 {
+	char		msg_body [HTTP_MESSAGE_SIZE];
 
-	char		msg_body  [HTTP_MESSAGE_SIZE];
+	_finalise_message_body(msg_body, req, rsp_str);
 
-	_insert_json_body(msg_body, req, msg_content);
-	_timestamp_message(msg_buf, ERROR_NOT_FOUND, msg_body);
-	strncat(msg_buf, msg_body, HTTP_MESSAGE_SIZE);
+	_start_message(msg_buf);
+	_insert_content_length(msg_buf, msg_body);
+	strncat(msg_buf, "Content-Type: text/html\r\n", HTTP_MESSAGE_SIZE);
+	strncat(msg_buf, "Server: Pushy/0.0.1-1\r\n", HTTP_MESSAGE_SIZE);
+	_insert_date(msg_buf);
+	_finalise_message(msg_buf, msg_body);
 
 	write(peerfd, msg_buf, strlen(msg_buf));
 
@@ -89,16 +136,17 @@ send_response(int peerfd, char *msg_buf, char *msg_content, struct request *req)
 int
 read_request(struct request *req, int peerfd)
 {
-	char		req_buffer[REQUEST_BUFFER_SIZE + 1];
-	int			req_length = read(peerfd, req_buffer, REQUEST_BUFFER_SIZE);
+	char		req_buf[REQUEST_BUFFER_SIZE + 1];
+	int			req_length = read(peerfd, req_buf, REQUEST_BUFFER_SIZE);
+	puts(req_buf);
 
 	if (req_length) {
 
-		req_buffer[req_length] = '\0';
+		req_buf[req_length] = '\0';
 	}
 
-	req->method = _get_request_method(req_buffer);
-	strncpy(req->uri, _get_request_uri(req_buffer),sizeof(req->uri)); 
+	req->method = _get_request_method(req_buf);
+	strncpy(req->uri, _get_request_uri(req_buf),sizeof(req->uri)); 
 
 	return (int) strnlen(req->uri, sizeof(req->uri));
 }

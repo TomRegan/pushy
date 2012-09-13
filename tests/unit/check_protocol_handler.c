@@ -3,7 +3,7 @@
 #include "../../include/protocol_handler.h"
 
 /* private functions */
-void _insert_json_body(char*, struct request*, char*);
+void _finalise_message_body(char*, struct request*, char*);
 char * _get_request_uri(char*);
 unsigned char _get_request_method(char *);
 
@@ -111,7 +111,7 @@ START_TEST (test_generate_json_body)
 		.method = MGET,
 		.uri = "/"
 	};
-	_insert_json_body(msg_body, &req, msg_content);
+	_finalise_message_body(msg_body, &req, msg_content);
 	fail_unless(0 == strcmp("{\"/\":\"unit-test\"}\r\n", msg_body));
 }
 END_TEST
