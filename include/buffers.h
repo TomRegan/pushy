@@ -1,9 +1,4 @@
-/**
- * author      : Tom Regan <code.tom.regan@gmail.com>
- * description : Buffer lengths.
- *
- *
- * Copyright 2012 Tom Regan <code.tom.regan@gmail.com>
+/* Copyright 2012 Tom Regan <code.tom.regan@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- **/
+ */
+
+/*
+ * @file  buffers.h
+ * @brief  sizes for buffers
+ * @author  Tom Regan <code.tom.regan@gmail.com>
+ */
 
 #ifndef BUFFERS_H
 #define BUFFERS_H 1
 
-#define HTTP_MESSAGE_SIZE 1024
-#define REQUEST_BUFFER_SIZE 1024
+#define HTTP_RESPONSE_LEN 2048
+#define HTTP_BODY_LEN 1024
+#define HTTP_HEAD_LEN 1024
+#define REQUEST_BUFFER_LEN 1024
+#define MAX_URI_LEN 1024
 
 #endif /* BUFFERS_H */

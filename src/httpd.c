@@ -59,7 +59,7 @@ init_server()
 void
 accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
-  char msg_buffer[HTTP_MESSAGE_SIZE];
+  char msg_buffer[HTTP_RESPONSE_LEN];
   struct request r;
 
   bzero(&r, sizeof(struct request));

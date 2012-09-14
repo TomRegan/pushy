@@ -16,16 +16,15 @@
 
 /*
  * @file  protocol_handler.h
- * @brief functions to get and process http requests
+ * @brief  functions to get and process http requests
  * @author  Tom Regan <code.tom.regan@gmail.com>
  */
 
 #include <arpa/inet.h>
+#include "buffers.h"
 
 #ifndef REQUEST_H
 #define REQUEST_H 1
-
-#define MAX_URI_LEN 1024
 
 /* http methods */
 #define MOPTIONS   1

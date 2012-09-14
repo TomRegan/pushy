@@ -81,7 +81,7 @@ START_TEST(test_long_uri_gets_414_response)
 	char		buf[8*BUFFER_S];
 	char		time_buffer[RFC1123_TIME_LEN + 1];
 	char		uri_buffer[URI_LEN];
-	char		response_template[HTTP_MESSAGE_SIZE] = "\
+	char		response_template[HTTP_RESPONSE_LEN] = "\
 HTTP/1.1 414 Request-URI Too Long\r\n\
 Content-Length: 1061\r\n\
 Content-Type: text/html\r\n\
@@ -89,7 +89,7 @@ Server: Pushy/0.0.1-1\r\n\
 Date: %s\r\n\
 \r\n\
 {\"%s\":\"request-uri-too-long\"}";
-	char		expect_response[HTTP_MESSAGE_SIZE];
+	char		expect_response[HTTP_RESPONSE_LEN];
 	size_t		expect_response_len;
 
 	bzero(uri_buffer, sizeof (uri_buffer));
@@ -135,7 +135,7 @@ START_TEST(test_error_not_found_gets_404_response)
 	char		*request = "GET / HTTP/1.1";
 	char		buf[BUFFER_S];
 	char		time_buffer[RFC1123_TIME_LEN + 1];
-	char		response_template[HTTP_MESSAGE_SIZE] = "\
+	char		response_template[HTTP_RESPONSE_LEN] = "\
 HTTP/1.1 404 Not Found\r\n\
 Content-Length: 19\r\n\
 Content-Type: text/html\r\n\
@@ -143,7 +143,7 @@ Server: Pushy/0.0.1-1\r\n\
 Date: %s\r\n\
 \r\n\
 {\"/\":\"not-found\"}\r\n";
-	char		expect_response[HTTP_MESSAGE_SIZE];
+	char		expect_response[HTTP_RESPONSE_LEN];
 	size_t		expect_response_len;
 
 	bzero(buf, BUFFER_S);
@@ -187,7 +187,7 @@ START_TEST(test_malformed_request_uri_gets_error_bad_request)
 		"POST / foo HTTP/1.1",
 		"PUT foo HTTP/1.1",
 		"HEAD /foo/bar /baz HTTP/1.1"};
-	char		response_template[HTTP_MESSAGE_SIZE] = "\
+	char		response_template[HTTP_RESPONSE_LEN] = "\
 HTTP/1.1 400 Bad Request\r\n\
 Content-Length: %zu\r\n\
 Content-Type: text/html\r\n\
@@ -195,7 +195,7 @@ Server: Pushy/0.0.1-1\r\n\
 Date: %s\r\n\
 \r\n\r\n\
 {\"%s\":\"bad-request\"}";
-	char		expect_response[HTTP_MESSAGE_SIZE];
+	char		expect_response[HTTP_RESPONSE_LEN];
 	char		time_buffer[RFC1123_TIME_LEN + 1];
 	char		buf       [BUFFER_S];
 	size_t		response_len, i;
@@ -208,7 +208,7 @@ Date: %s\r\n\
 		printf("l1: test %zu\n", i);
 		bzero(buf, BUFFER_S);
 		bzero(time_buffer, RFC1123_TIME_LEN + 1);
-		bzero(expect_response, HTTP_MESSAGE_SIZE);
+		bzero(expect_response, HTTP_RESPONSE_LEN);
 		puts("l2");
 		get_time(time_buffer);
 		puts("l3");

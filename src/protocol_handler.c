@@ -16,7 +16,7 @@
 
 /*
  * @file  protocol_handler.c
- * @brief functions to get and process http requests
+ * @brief  functions to get and process http requests
  * @author  Tom Regan <code.tom.regan@gmail.com>
  */
 
@@ -31,49 +31,72 @@
 #include "../include/buffers.h"
 #include "../include/protocol_handler.h"
 
-#define STRTOK strtok
+
+size_t
+_remaining_size(int max, char *buf)
+{
+	return (max - strnlen(buf, max));
+}
 
 void
 _start_message(char *msg_buf)
 {
-	bzero(msg_buf, HTTP_MESSAGE_SIZE);
-	strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_MESSAGE_SIZE);
+	msg_buf [0] = '\0';
+	strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_RESPONSE_LEN);
 }
 
-
-void
+int
 _insert_content_length(char *msg_buf, char *msg_body)
 {
-	char		*fmt_buf = "Content-Length: %zu\r\n";
-	char		tmp_buf [HTTP_MESSAGE_SIZE];
-	snprintf(tmp_buf, sizeof(tmp_buf), fmt_buf, strnlen(msg_body, HTTP_MESSAGE_SIZE));
-	strncat(msg_buf, tmp_buf, HTTP_MESSAGE_SIZE);
+	const size_t	MAX_LEN = _remaining_size(HTTP_HEAD_LEN, msg_buf);
+	const char	*fmt_buf = "Content-Length: %zu\r\n";
+
+	char		tmp_buf [HTTP_HEAD_LEN];
+
+	if(!MAX_LEN > 0) {
+		return -1; /* header too long */
+	}
+
+	snprintf(tmp_buf, sizeof(tmp_buf), fmt_buf, strnlen(msg_body, HTTP_RESPONSE_LEN));
+	strncat(msg_buf, tmp_buf, HTTP_HEAD_LEN);
+
+	return 0; /* no error */
 }
 
-void
+int
 _finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
 {
-	char		*fmt_buf = "{\"%s\":\"%s\"}\r\n";
-	sprintf(msg_body, fmt_buf, req->uri, rsp_str);
+	const char	*fmt_buf = "{\"%s\":\"%s\"}\r\n";
+
+	return snprintf(msg_body, HTTP_BODY_LEN, fmt_buf, req->uri, rsp_str);
 }
 
-void
+int
 _insert_date(char *msg_buf)
 {
+	const size_t	MAX_LEN = _remaining_size(HTTP_HEAD_LEN, msg_buf);
+	const char		*fmt_buf = "Date: %s\r\n\r\n";
+
 	time_t		rawtime;
-	char		time_buffer[RFC1123_TIME_LEN + 1];
-	char		tmp_buf [HTTP_MESSAGE_SIZE];
-	char		*fmt_buf = "Date: %s\r\n\r\n";
+	char		time_buffer [RFC1123_TIME_LEN + 1];
+	char		tmp_buf [MAX_LEN];
+
+	if (!MAX_LEN > 0) {
+		return -1; /* header too long */
+	}
+
 	time(&rawtime);
 	strftime(time_buffer, RFC1123_TIME_LEN, RFC1123_TIME, gmtime(&rawtime));
-	snprintf(tmp_buf, sizeof(tmp_buf), fmt_buf, time_buffer);
-	strncat(msg_buf, tmp_buf, HTTP_MESSAGE_SIZE);
+	snprintf(tmp_buf, MAX_LEN, fmt_buf, time_buffer);
+	strncat(msg_buf, tmp_buf, MAX_LEN);
+
+	return 0; /* no error */
 }
 
 void
 _finalise_message(char *msg_buf, char *msg_body)
 {
-	strncat(msg_buf, msg_body, HTTP_MESSAGE_SIZE);
+	strncat(msg_buf, msg_body, HTTP_RESPONSE_LEN);
 }
 
 unsigned char
@@ -107,28 +130,35 @@ _get_request_uri(char *request_line)
 	}
 
 	/* TODO: rewrite so the original request is preserved */
-	static char	uri_buf[MAX_URI_LEN];
+	char		*uri_buf;
 
-	strncpy(uri_buf, request_line, sizeof(uri_buf));
+	uri_buf = strndup(request_line, MAX_URI_LEN);
 
-	return STRTOK(uri_buf, " ");
+	return strtok(uri_buf, " ");
 }
 
 int
 send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
 {
-	char		msg_body [HTTP_MESSAGE_SIZE];
+	char		msg_body [HTTP_BODY_LEN];
+	int			error = 0;
 
 	_finalise_message_body(msg_body, req, rsp_str);
 
 	_start_message(msg_buf);
-	_insert_content_length(msg_buf, msg_body);
-	strncat(msg_buf, "Content-Type: text/html\r\n", HTTP_MESSAGE_SIZE);
-	strncat(msg_buf, "Server: Pushy/0.0.1-1\r\n", HTTP_MESSAGE_SIZE);
-	_insert_date(msg_buf);
+	error = _insert_content_length(msg_buf, msg_body);
+	strncat(msg_buf, "Content-Type: text/html\r\n", HTTP_HEAD_LEN);
+	strncat(msg_buf, "Server: Pushy/0.0.1-1\r\n", HTTP_HEAD_LEN);
+	error = _insert_date(msg_buf);
+
+	if (error < 0) {
+		/* it's some kind of server error */
+		msg_body [0] = '\0';
+	}
+
 	_finalise_message(msg_buf, msg_body);
 
-	write(peerfd, msg_buf, strlen(msg_buf));
+	write(peerfd, msg_buf, strnlen(msg_buf, HTTP_RESPONSE_LEN));
 
 	return close(peerfd);
 }
@@ -136,17 +166,17 @@ send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
 int
 read_request(struct request *req, int peerfd)
 {
-	char		req_buf[REQUEST_BUFFER_SIZE + 1];
-	int			req_length = read(peerfd, req_buf, REQUEST_BUFFER_SIZE);
+	char		req_buf [REQUEST_BUFFER_LEN + 1];
+	int			req_length = read(peerfd, req_buf, REQUEST_BUFFER_LEN);
 	puts(req_buf);
 
 	if (req_length) {
 
-		req_buf[req_length] = '\0';
+		req_buf [req_length] = '\0';
 	}
 
 	req->method = _get_request_method(req_buf);
-	strncpy(req->uri, _get_request_uri(req_buf),sizeof(req->uri)); 
+	strncpy(req->uri, _get_request_uri(req_buf), MAX_URI_LEN); 
 
 	return (int) strnlen(req->uri, sizeof(req->uri));
 }
