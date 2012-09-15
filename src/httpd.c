@@ -82,28 +82,35 @@ init_server()
 void
 accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
+	static int	req_no;
 	char		msg_buffer[HTTP_RESPONSE_LEN + 1];
 	char           *status;
 	struct request	r;
 	int		error = 0;
 
-	printf("\n>>> %s\n\n", inet_ntoa(peer_addr->sin_addr));
+	write_log(FINE, "req# %i\n", ++req_no);
+	write_log(INFO, ">>> %s\n", inet_ntoa(peer_addr->sin_addr));
 
 	if ((error = read_request(&r, peerfd)) > 0) {
-		write_log(INFO, "read %i bytes\n", (int) error);
+		write_log(INFO, "read %i bytes from %s\n", error, inet_ntoa(peer_addr->sin_addr)); 
 
 		if (error > MAX_URI_LEN) {
 			status = SURITOOLONG;
+			write_log(DEBUG, "request too long\n");
 		} else {
 			status = SNOTFOUND;
+			write_log(DEBUG, "request not found\n");
 		}
 
 		send_response(peerfd, msg_buffer, status, &r);
-		printf("\n<<< %s\n\n", inet_ntoa(peer_addr->sin_addr));
+		write_log(INFO, "<<< %s\n", inet_ntoa(peer_addr->sin_addr));
 		puts(msg_buffer);
 	} else {
 		write_log(ERROR, "read_request: %i\n", (int) error);
 	}
+	write_log(DEBUG, "closing connection to %s\n", inet_ntoa(peer_addr->sin_addr)); 
+	/* close(peerfd); */
+	shutdown(peerfd, SHUT_RDWR);
 
 	return;
 }
@@ -124,7 +131,7 @@ serve_forever(int sockfd)
 	struct sockaddr_in peer_addr;
 	socklen_t	sin_size = sizeof(struct sockaddr_in);
 
-	printf("accepting connections on %i\n", PORT);
+	write_log(INFO, "accepting connections on %i\n", PORT);
 
 	while (1) {
 
@@ -134,6 +141,7 @@ serve_forever(int sockfd)
 			handle_error("accept");
 		} else {
 			/* thread */
+			write_log(DEBUG, "connection from %s\n", inet_ntoa(peer_addr.sin_addr));
 			accept_request(peerfd, &peer_addr);
 		}
 	}
@@ -146,7 +154,7 @@ main(int argc, char *argv[])
 {
 	int		sockfd;
 
-	printf("Pushy/0.0.1.1 starting\n");
+	write_log(INFO, "Pushy/0.0.1.1 starting\n");
 
 	sockfd = init_server();
 	serve_forever(sockfd);

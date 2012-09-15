@@ -34,7 +34,6 @@ _start_message(char *msg_buf)
 {
 	char		*c;
 
-	msg_buf[0] = '\0';
 	strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_RESPONSE_LEN);
 
 	return 0; /* no error */
