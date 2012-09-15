@@ -48,6 +48,7 @@
 int
 init_server()
 {
+	write_log(DEBUG, "init_server()\n");
 	int		sockfd;
 	struct sockaddr_in local_addr;
 
@@ -82,13 +83,14 @@ init_server()
 void
 accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
+	write_log(DEBUG, "accept_request()\n");
 	static int	req_no;
 	char		msg_buffer[HTTP_RESPONSE_LEN + 1];
 	char           *status;
 	struct request	r;
 	int		error = 0;
 
-	write_log(FINE, "req# %i\n", ++req_no);
+	write_log(FINE, "request #%i\n", ++req_no);
 	write_log(INFO, ">>> %s\n", inet_ntoa(peer_addr->sin_addr));
 
 	if ((error = read_request(&r, peerfd)) > 0) {
@@ -110,7 +112,7 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 	}
 	write_log(DEBUG, "closing connection to %s\n", inet_ntoa(peer_addr->sin_addr)); 
 	/* close(peerfd); */
-	shutdown(peerfd, SHUT_RDWR);
+	/* shutdown(peerfd, SHUT_RDWR); */
 
 	return;
 }
@@ -127,6 +129,7 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 int
 serve_forever(int sockfd)
 {
+	write_log(DEBUG, "serve_forever()\n");
 	int		peerfd;
 	struct sockaddr_in peer_addr;
 	socklen_t	sin_size = sizeof(struct sockaddr_in);

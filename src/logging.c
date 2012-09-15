@@ -13,25 +13,25 @@ write_log(int level, char *fmt, ...)
 
 	switch (level) {
 		case ERROR:
-			label = "<error>  ";
+			label = "<error>\t";
 			break;
 		case INFO:
-			label = "<info>  ";
+			label = "<info>\t";
 			break;
 		case FINE:
-			label = "<fine>  ";
+			label = "<fine>\t";
 			break;
 		case FINER:
-			label = "<finer>  ";
+			label = "<finer>\t";
 			break;
 		case FINEST:
-			label = "<finest>  ";
+			label = "<finest>\t";
 			break;
 		case DEBUG:
-			label = "<debug>  ";
+			label = "<debug>\t";
 			break;
 		default:
-			label = "<oops>  ";
+			label = "<oops>\t";
 	}
 
 	strncpy(log_buf, label, sizeof(log_buf));

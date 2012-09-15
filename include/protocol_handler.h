@@ -29,6 +29,7 @@
 #include <arpa/inet.h>
 #include <stdint.h>
 #include "buffers.h"
+#include "logging.h"
 
 #ifndef REQUEST_H
 #define REQUEST_H 1

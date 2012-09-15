@@ -1,3 +1,6 @@
+#ifndef LOGGING_H
+#define LOGGING_H 1
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -14,3 +17,5 @@
 #define LOG_BUFFER_LEN 256
 
 void write_log(int, char*, ...);
+
+#endif /* LOGGING_H */
