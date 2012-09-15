@@ -26,7 +26,7 @@
 int
 init_server()
 {
-	int			sockfd;
+	int		sockfd;
 	struct sockaddr_in local_addr;
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -61,9 +61,9 @@ void
 accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
 	char		msg_buffer[HTTP_RESPONSE_LEN + 1];
-	char		*status;
+	char           *status;
 	struct request	r;
-	int			error = 0;
+	int		error = 0;
 
 	printf("\n>>> %s\n\n", inet_ntoa(peer_addr->sin_addr));
 
@@ -98,7 +98,7 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 int
 serve_forever(int sockfd)
 {
-	int			peerfd;
+	int		peerfd;
 	struct sockaddr_in peer_addr;
 	socklen_t	sin_size = sizeof(struct sockaddr_in);
 
@@ -122,7 +122,7 @@ serve_forever(int sockfd)
 int
 main(int argc, char *argv[])
 {
-	int			sockfd;
+	int		sockfd;
 
 	printf("Pushy/0.0.1.1 starting\n");
 
