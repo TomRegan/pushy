@@ -5,7 +5,7 @@
 
 /* private functions */
 void _finalise_message_body(char*, struct request*, char*);
-uint8_t _get_request_uri(char*, struct request*);
+int8_t _get_request_uri(char*, struct request*);
 unsigned char _get_request_method(char *);
 
 START_TEST (test_request_url_is_parsed)
@@ -113,23 +113,13 @@ START_TEST (test_long_request_sets_correct_flag)
 		buffer [i] = 'a';
 		buffer [j] = 'b';
 	}
-	error = _get_request_uri(buffer, &req);
-
-	/*
-	 * 0b10000000 is the error code to uri-too-long
-	 */
-	fail_unless(error == 0x1 << 7);
+	fail_unless(-1 ==_get_request_uri(buffer, &req));
 }
 END_TEST
 
 START_TEST (test_non_ascii_sets_correct_flag)
 {
   unsigned char method = 0;
-  /* As this is the net it would be a good idea
-   * to assume the worst: any ascii char might
-   * come over the wire and should be handled
-   * with decorum
-   */
   char buf[3] = {(char)6, (char)1, '\0'};
   method = _get_request_method(buf);
   fail_unless(method == MUNKNOWN);

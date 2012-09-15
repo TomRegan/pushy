@@ -28,7 +28,7 @@ _remaining_size(int max, char *buf)
 	return (max - strnlen(buf, max));
 }
 
-uint8_t
+int8_t
 _start_message(char *msg_buf)
 {
 	char			*c;
@@ -39,7 +39,7 @@ _start_message(char *msg_buf)
 	return 0; /* no error */
 }
 
-uint8_t
+int8_t
 _insert_content_length(char *msg_buf, char *msg_body)
 {
 	const size_t	MAX_LEN = _remaining_size(HTTP_HEAD_LEN, msg_buf);
@@ -58,7 +58,7 @@ _insert_content_length(char *msg_buf, char *msg_body)
 	return 0; /* no error */
 }
 
-uint8_t
+int8_t
 _finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
 {
 	const char	*fmt_buf = "{\"%s\":\"%s\"}\r\n";
@@ -68,7 +68,7 @@ _finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
 	return 0; /* no error */
 }
 
-uint8_t
+int8_t
 _insert_date(char *msg_buf)
 {
 	const size_t	MAX_LEN = _remaining_size(HTTP_HEAD_LEN, msg_buf);
@@ -90,7 +90,7 @@ _insert_date(char *msg_buf)
 	return 0; /* no error */
 }
 
-uint8_t
+int8_t
 _finalise_message(char *msg_buf, char *msg_body)
 {
 	char		*c;
@@ -114,7 +114,7 @@ _get_request_method(char *request_line)
 	return MUNKNOWN;
 }
 
-uint8_t
+int8_t
 _get_request_uri(char *request_line, struct request *req)
 {
 	char		tmp_buf [MAX_URI_LEN + 1];
@@ -125,7 +125,7 @@ _get_request_uri(char *request_line, struct request *req)
 	}
 
 	if (i < 0) {
-		return 0x1 << 7; /* uri is too long */
+		return -1; /* uri is too long */
 	}
 
 	/*
