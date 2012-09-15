@@ -1,22 +1,28 @@
 #include <stdio.h>
 #include <check.h>
+#include <stdint.h>
 #include "../../include/protocol_handler.h"
 
 /* private functions */
 void _finalise_message_body(char*, struct request*, char*);
-char * _get_request_uri(char*);
+uint8_t _get_request_uri(char*, struct request*);
 unsigned char _get_request_method(char *);
 
 START_TEST (test_request_url_is_parsed)
 {
-  char req_str_1[] = "GET /foo/zen HTTP/1.1\r\n";
-  char req_str_2[] = "GET /foo/happy HTTP/1.1\r\n";
-  char *uri;
+	struct request	req;
+	char			req_str_1[] = "GET /foo/zen HTTP/1.1\r\n";
+	char			req_str_2[] = "GET /foo/happy HTTP/1.1\r\n";
+	char			*uri;
+	int			error = 0;
 
-  uri = _get_request_uri(req_str_1);
-  fail_unless(0 == strcmp(uri, "/foo/zen"));
-  uri = _get_request_uri(req_str_2);
-  fail_unless(0 == strcmp(uri, "/foo/happy"));
+	error = _get_request_uri(req_str_1, &req);
+	fail_unless(0 == strcmp(req.uri, "/foo/zen"));
+	fail_unless(0 == error);
+	bzero(&req, sizeof(struct request));
+	_get_request_uri(req_str_2, &req);
+	fail_unless(0 == strcmp(req.uri, "/foo/happy"));
+	fail_unless(0 == error);
 }
 END_TEST
 
@@ -27,7 +33,7 @@ START_TEST (test_method_and_uri_are_returned)
 
   bzero(&r, sizeof(struct request));
   r.method = _get_request_method(request);
-  strncpy(r.uri, _get_request_uri(request), sizeof(r.uri));
+  _get_request_uri(request, &r);
   fail_unless(MGET == r.method);
   fail_unless(0 == strcmp(r.uri, "/foo/zen/happy.html"));
 }
@@ -86,6 +92,33 @@ START_TEST (test_empty_request_sets_correct_flag)
    */
   method = _get_request_method("");
   fail_unless(method == MUNKNOWN);
+}
+END_TEST
+
+START_TEST (test_long_request_sets_correct_flag)
+{
+	char			buffer [MAX_URI_LEN*2];
+	struct request	req;
+	int i, j, error = 0;
+
+	bzero(buffer, MAX_URI_LEN*2);
+
+	for (i = 0, j = MAX_URI_LEN*2; i < MAX_URI_LEN; ++i, --j) {
+		/*
+		 * This will create a string with 2048 characters.
+		 * The character in the 1024th place will be a null.
+		 * The string will begin with as and following the
+		 * null be filled with bs (I mean letter 'B's).
+		 */
+		buffer [i] = 'a';
+		buffer [j] = 'b';
+	}
+	error = _get_request_uri(buffer, &req);
+
+	/*
+	 * 0b10000000 is the error code to uri-too-long
+	 */
+	fail_unless(error == 0x1 << 7);
 }
 END_TEST
 

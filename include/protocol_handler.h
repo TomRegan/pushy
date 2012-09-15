@@ -20,7 +20,14 @@
  * @author  Tom Regan <code.tom.regan@gmail.com>
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
+#include <unistd.h>
 #include <arpa/inet.h>
+#include <stdint.h>
 #include "buffers.h"
 
 #ifndef REQUEST_H
@@ -54,7 +61,7 @@ http_version
 struct
 request
 {
-  unsigned char method;
+  uint8_t method;
   char uri[MAX_URI_LEN];
 };
 
@@ -72,8 +79,8 @@ int read_request(struct request*, int);
  * @param msg_buf a buffer that will hold the complete message
  * @param msg_content the message content
  * @param r an http request struct
- * @return >=0 on success, -1 on error
+ * @return 0 on success, error status on error
  */
-int send_response(int, char*, char*, struct request*);
+uint8_t send_response(int, char*, char*, struct request*);
 
 #endif /* REQUEST_H */

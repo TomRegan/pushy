@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include "../include/protocol_handler.h"
 #include "../include/buffers.h"
+#include "../include/logging.h"
 
 #define PORT 55080
 #define BACKLOG 50
@@ -22,28 +23,28 @@
  *
  * @return  int  file descriptor of a new socket
  */
-static int
+int
 init_server()
 {
-  int sockfd;
-  struct sockaddr_in local_addr;
+	int			sockfd;
+	struct sockaddr_in local_addr;
 
-  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
-    handle_error("socket");
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+		handle_error("socket");
+	}
+	bzero(&local_addr, sizeof(struct sockaddr_in));
+	local_addr.sin_family = AF_INET;
+	local_addr.sin_port = htons(PORT);
+	local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  bzero(&local_addr, sizeof (struct sockaddr_in) );
-  local_addr.sin_family = AF_INET;
-  local_addr.sin_port = htons(PORT);
-  local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-  if ((bind (sockfd, (struct sockaddr *) &local_addr, 
-	     sizeof (struct sockaddr_in))) == -1)
-    handle_error("bind");
-
-  if (listen(sockfd, BACKLOG) == -1)
-    handle_error("listen");
-
-  return sockfd;
+	if ((bind(sockfd, (struct sockaddr *)&local_addr,
+		  sizeof(struct sockaddr_in))) == -1) {
+		handle_error("bind");
+	}
+	if (listen(sockfd, BACKLOG) == -1) {
+		handle_error("listen");
+	}
+	return sockfd;
 }
 
 /**
@@ -59,31 +60,30 @@ init_server()
 void
 accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
-  char msg_buffer[HTTP_RESPONSE_LEN];
-  struct request r;
+	char		msg_buffer[HTTP_RESPONSE_LEN + 1];
+	char		*status;
+	struct request	r;
+	int			error = 0;
 
-  bzero(&r, sizeof(struct request));
-  /* TODO this is a silly way of checking length. instead defer to a
-   * rules method in request.c that validates all the conditions, and 
-   * simply strlen the req->uri. Keeping rules checking out of http
-   * will improve the transition to threading.
-   */
-  printf("\n>>> %s\n\n", inet_ntoa(peer_addr->sin_addr));
-  int uri_len = read_request(&r, peerfd);
-  char *status;
-  if (uri_len > 100) {
-	  status = SURITOOLONG;
-  }
-  else
-  {
-	  status = SNOTFOUND;
-  }
-  send_response(peerfd, msg_buffer, status, &r);
-  /* TODO write to logging function */
-  printf("\n<<< %s\n\n", inet_ntoa(peer_addr->sin_addr));
-  puts(msg_buffer);
+	printf("\n>>> %s\n\n", inet_ntoa(peer_addr->sin_addr));
 
-  return;
+	if ((error = read_request(&r, peerfd)) > 0) {
+		printf("read %i bytes\n", error);
+
+		if (error > MAX_URI_LEN) {
+			status = SURITOOLONG;
+		} else {
+			status = SNOTFOUND;
+		}
+
+		send_response(peerfd, msg_buffer, status, &r);
+		printf("\n<<< %s\n\n", inet_ntoa(peer_addr->sin_addr));
+		puts(msg_buffer);
+	} else {
+		printf("error:\t%i\n", error);
+	}
+
+	return;
 }
 
 /**
@@ -95,41 +95,39 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
  *
  * @return  int  EXIT_SUCCESS|EXIT_FAILURE
  */
-static int
+int
 serve_forever(int sockfd)
 {
-  int peerfd;
-  struct sockaddr_in peer_addr;
-  socklen_t sin_size = sizeof (struct sockaddr_in);
+	int			peerfd;
+	struct sockaddr_in peer_addr;
+	socklen_t	sin_size = sizeof(struct sockaddr_in);
 
-  printf("accepting connections on %i\n", PORT);
+	printf("accepting connections on %i\n", PORT);
 
-  while (1) {
+	while (1) {
 
-    bzero(&peer_addr, sizeof (struct sockaddr_in));
-    if ((peerfd = accept(sockfd, (struct sockaddr *) &peer_addr,
-			 (socklen_t *) &sin_size)) == -1) {
+		bzero(&peer_addr, sizeof(struct sockaddr_in));
+		if ((peerfd = accept(sockfd, (struct sockaddr *)&peer_addr,
+				     (socklen_t *) & sin_size)) == -1) {
+			handle_error("accept");
+		} else {
+			/* thread */
+			accept_request(peerfd, &peer_addr);
+		}
+	}
 
-      handle_error("accept");
-	} else {
-      /* thread */
-      accept_request(peerfd, &peer_addr);
-    }
-
-  }
-
-  return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
 
 int
 main(int argc, char *argv[])
 {
-  int sockfd;
+	int			sockfd;
 
-  printf("Pushy/0.0.1-1 starting\n");
+	printf("Pushy/0.0.1.1 starting\n");
 
-  sockfd = init_server();
-  serve_forever(sockfd);
+	sockfd = init_server();
+	serve_forever(sockfd);
 
-  return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }

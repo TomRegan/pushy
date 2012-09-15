@@ -98,14 +98,14 @@ Date: %s\r\n\
 
 	/*
 	 * to trigger a 414 we need to present the server with an arbitrarily
-	 * long uri. Pushy will server any request up to 1Kb in length.
+	 * long uri. Pushy will serve any request up to 1Kb in length.
 	 * the following will generate a uri which is slightly larget than
 	 * pushy's maximum.
 	 */
 	int i;
 	for (i = 0; i < 100; ++i) {
 
-		uri_buffer[i] = 'a';
+		uri_buffer [i] = 'a';
 	}
 	snprintf(header, (size_t)2*BUFFER_S, header_fmt, uri_buffer);
 
@@ -133,17 +133,17 @@ START_TEST(test_error_not_found_gets_404_response)
 	int			result;
 
 	char		*request = "GET / HTTP/1.1";
-	char		buf[BUFFER_S];
+	char		buf[BUFFER_S + 1];
 	char		time_buffer[RFC1123_TIME_LEN + 1];
-	char		response_template[HTTP_RESPONSE_LEN] = "\
+	char		response_template[HTTP_RESPONSE_LEN + 1] = "\
 HTTP/1.1 404 Not Found\r\n\
 Content-Length: 19\r\n\
 Content-Type: text/html\r\n\
-Server: Pushy/0.0.1-1\r\n\
+Server: Pushy/0.0.1.1\r\n\
 Date: %s\r\n\
 \r\n\
 {\"/\":\"not-found\"}\r\n";
-	char		expect_response[HTTP_RESPONSE_LEN];
+	char		expect_response[HTTP_RESPONSE_LEN + 1];
 	size_t		expect_response_len;
 
 	bzero(buf, BUFFER_S);
@@ -166,7 +166,6 @@ Date: %s\r\n\
 	 * it would be polite to fix this, but based on a loop of tests I ran
 	 * I estimate this is a problem about 1/500 times.
 	 */
-	/* TODO: sprintf -> snprintf */
 	sprintf(expect_response, response_template, time_buffer);
 	expect_response_len = strlen(expect_response);
 
@@ -182,12 +181,12 @@ END_TEST
 #define NREQS 4
 START_TEST(test_malformed_request_uri_gets_error_bad_request)
 {
-	char		*requests[NREQS] = {
+	char		*requests [NREQS] = {
 		"GET // HTTP/1.1",
 		"POST / foo HTTP/1.1",
 		"PUT foo HTTP/1.1",
 		"HEAD /foo/bar /baz HTTP/1.1"};
-	char		response_template[HTTP_RESPONSE_LEN] = "\
+	char		response_template [HTTP_RESPONSE_LEN + 1] = "\
 HTTP/1.1 400 Bad Request\r\n\
 Content-Length: %zu\r\n\
 Content-Type: text/html\r\n\
@@ -195,16 +194,16 @@ Server: Pushy/0.0.1-1\r\n\
 Date: %s\r\n\
 \r\n\r\n\
 {\"%s\":\"bad-request\"}";
-	char		expect_response[HTTP_RESPONSE_LEN];
-	char		time_buffer[RFC1123_TIME_LEN + 1];
-	char		buf       [BUFFER_S];
+	char		expect_response [HTTP_RESPONSE_LEN + 1];
+	char		time_buffer [RFC1123_TIME_LEN + 1];
+	char		buf [BUFFER_S + 1];
 	size_t		response_len, i;
 	int			result;
 
 	/* this is being debuggered, presently it doesn't work */
 	for (i = 0; i < NREQS; ++i) {
-		puts(requests[i]);
-		printf("%zu\n", strlen(requests[i]));
+		puts(requests [i]);
+		printf("%zu\n", strlen(requests [i]));
 		printf("l1: test %zu\n", i);
 		bzero(buf, BUFFER_S);
 		bzero(time_buffer, RFC1123_TIME_LEN + 1);
@@ -216,7 +215,7 @@ Date: %s\r\n\
 		puts("l4");
 		sprintf(expect_response, response_template, response_len, time_buffer);
 		puts("l5");
-		write(sockfd, requests[i], strlen(requests[i]));
+		write(sockfd, requests [i], strlen(requests [i]));
 		puts("l6");
 		read(sockfd, buf, BUFFER_S);
 		puts("l7");

@@ -20,17 +20,7 @@
  * @author  Tom Regan <code.tom.regan@gmail.com>
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-
-#include <unistd.h>
-#include <arpa/inet.h>
-
-#include "../include/buffers.h"
 #include "../include/protocol_handler.h"
-
 
 size_t
 _remaining_size(int max, char *buf)
@@ -38,40 +28,47 @@ _remaining_size(int max, char *buf)
 	return (max - strnlen(buf, max));
 }
 
-void
+uint8_t
 _start_message(char *msg_buf)
 {
+	char			*c;
+
 	msg_buf [0] = '\0';
 	strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_RESPONSE_LEN);
+
+	return 0; /* no error */
 }
 
-int
+uint8_t
 _insert_content_length(char *msg_buf, char *msg_body)
 {
 	const size_t	MAX_LEN = _remaining_size(HTTP_HEAD_LEN, msg_buf);
 	const char	*fmt_buf = "Content-Length: %zu\r\n";
 
-	char		tmp_buf [HTTP_HEAD_LEN];
+	char		tmp_buf [HTTP_HEAD_LEN + 1];
 
 	if(!MAX_LEN > 0) {
 		return -1; /* header too long */
 	}
 
+	/* TODO: error with copy, print */
 	snprintf(tmp_buf, sizeof(tmp_buf), fmt_buf, strnlen(msg_body, HTTP_RESPONSE_LEN));
 	strncat(msg_buf, tmp_buf, HTTP_HEAD_LEN);
 
 	return 0; /* no error */
 }
 
-int
+uint8_t
 _finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
 {
 	const char	*fmt_buf = "{\"%s\":\"%s\"}\r\n";
 
-	return snprintf(msg_body, HTTP_BODY_LEN, fmt_buf, req->uri, rsp_str);
+	snprintf(msg_body, HTTP_BODY_LEN, fmt_buf, req->uri, rsp_str);
+
+	return 0; /* no error */
 }
 
-int
+uint8_t
 _insert_date(char *msg_buf)
 {
 	const size_t	MAX_LEN = _remaining_size(HTTP_HEAD_LEN, msg_buf);
@@ -79,7 +76,7 @@ _insert_date(char *msg_buf)
 
 	time_t		rawtime;
 	char		time_buffer [RFC1123_TIME_LEN + 1];
-	char		tmp_buf [MAX_LEN];
+	char		tmp_buf [MAX_LEN + 1];
 
 	if (!MAX_LEN > 0) {
 		return -1; /* header too long */
@@ -93,90 +90,110 @@ _insert_date(char *msg_buf)
 	return 0; /* no error */
 }
 
-void
+uint8_t
 _finalise_message(char *msg_buf, char *msg_body)
 {
+	char		*c;
+
 	strncat(msg_buf, msg_body, HTTP_RESPONSE_LEN);
+
+	return 0; /* no error */
 }
 
-unsigned char
+uint8_t
 _get_request_method(char *request_line)
 {
 	if (strncmp(request_line, "GET", 3) == 0) {
-
 		return MGET;
 	}
 
 	if (strncmp(request_line, "POST", 4) == 0) {
-
 		return MPOST;
 	}
 
 	return MUNKNOWN;
 }
 
-char*
-_get_request_uri(char *request_line)
+uint8_t
+_get_request_uri(char *request_line, struct request *req)
 {
-	/*
-	 * The buffer includes the request method which we don't want; it's
-	 * pointless to call strtok just to get rid of the method so we'll
-	 * skip over it to the next space. HTTP says we will *definitely*
-	 * only have one space, *snigger*
-	 */
-	while (*request_line != ' ') {
+	char		tmp_buf [MAX_URI_LEN + 1];
+	int			i = MAX_URI_LEN;
 
+	while (*request_line != ' ' && i-- >= 0) {
 		request_line++;
 	}
 
-	/* TODO: rewrite so the original request is preserved */
-	char		*uri_buf;
+	if (i < 0) {
+		return 0x1 << 7; /* uri is too long */
+	}
 
-	uri_buf = strndup(request_line, MAX_URI_LEN);
+	/*
+	 * Copying is just to preserve the request buffer.
+	 */
+	strncpy(tmp_buf, request_line, sizeof(tmp_buf));
+	strncpy(req->uri, strtok(tmp_buf, " \n\r\t"), MAX_URI_LEN);
 
-	return strtok(uri_buf, " ");
+	return 0; /* no error */
 }
 
-int
+uint8_t
 send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
 {
-	char		msg_body [HTTP_BODY_LEN];
-	int			error = 0;
+	char		msg_body [HTTP_BODY_LEN + 1];
+	uint8_t		error = 0;
 
 	_finalise_message_body(msg_body, req, rsp_str);
 
 	_start_message(msg_buf);
-	error = _insert_content_length(msg_buf, msg_body);
-	strncat(msg_buf, "Content-Type: text/html\r\n", HTTP_HEAD_LEN);
-	strncat(msg_buf, "Server: Pushy/0.0.1-1\r\n", HTTP_HEAD_LEN);
-	error = _insert_date(msg_buf);
 
-	if (error < 0) {
-		/* it's some kind of server error */
-		msg_body [0] = '\0';
+	if (_insert_content_length(msg_buf, msg_body) == -1) {
+		error |= 0x1 << 7;
+	}
+
+	strncat(msg_buf, "Content-Type: text/html\r\n", HTTP_HEAD_LEN);
+	strncat(msg_buf, "Server: Pushy/0.0.1.1\r\n", HTTP_HEAD_LEN);
+
+	if (_insert_date(msg_buf) == -1) {
+		error |= 0x1;
 	}
 
 	_finalise_message(msg_buf, msg_body);
 
-	write(peerfd, msg_buf, strnlen(msg_buf, HTTP_RESPONSE_LEN));
+	if (error) {
+		/* it's some kind of server error */
+		msg_body [0] = '\0';
+	}
 
-	return close(peerfd);
+	write(peerfd, msg_buf, strnlen(msg_buf, HTTP_RESPONSE_LEN));
+	close(peerfd);
+
+	return error;
 }
 
 int
 read_request(struct request *req, int peerfd)
 {
 	char		req_buf [REQUEST_BUFFER_LEN + 1];
-	int			req_length = read(peerfd, req_buf, REQUEST_BUFFER_LEN);
-	puts(req_buf);
+	int			req_len = 0;
 
-	if (req_length) {
+	bzero(req_buf, REQUEST_BUFFER_LEN);
+	bzero(req, sizeof(struct request));
 
-		req_buf [req_length] = '\0';
+	if ((req_len = read(peerfd, req_buf, REQUEST_BUFFER_LEN)) != -1) {
+		puts(req_buf);
+		req_buf [req_len + 1] = '\0';
+		req->method = _get_request_method(req_buf);
+		_get_request_uri(req_buf, req);
+	} else if (req_len == 0) {
+		return -0x1; /* no read */
+	} else {
+		return -(0x1 << 7); /* read error */
 	}
 
-	req->method = _get_request_method(req_buf);
-	strncpy(req->uri, _get_request_uri(req_buf), MAX_URI_LEN); 
+	if (req->method == MUNKNOWN) {
+		return -(0x1 << 2); /* unknown request method */
+	}
 
-	return (int) strnlen(req->uri, sizeof(req->uri));
+	return req_len;
 }
