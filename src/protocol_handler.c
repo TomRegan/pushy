@@ -17,8 +17,8 @@
 
 /**
  * @file  protocol_handler.c
- * @brief  functions to get and process http
- * requests @author  Tom Regan <code.tom.regan@gmail.com>
+ * @brief  functions to get and process http requests
+ * @author  Tom Regan <code.tom.regan@gmail.com>
  */
 
 #include "../include/protocol_handler.h"
