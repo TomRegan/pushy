@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
@@ -91,10 +92,10 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 	int		error = 0;
 
 	write_log(FINE, "request #%i\n", ++req_no);
-	write_log(INFO, ">>> %s\n", inet_ntoa(peer_addr->sin_addr));
+	write_log(FINE, ">>> %s:%i\n", inet_ntoa(peer_addr->sin_addr), ntohs(peer_addr->sin_port));
 
 	if ((error = read_request(&r, peerfd)) > 0) {
-		write_log(INFO, "read %i bytes from %s\n", error, inet_ntoa(peer_addr->sin_addr)); 
+		write_log(FINE, "read %i bytes from %s:%i\n", error, inet_ntoa(peer_addr->sin_addr), ntohs(peer_addr->sin_port)); 
 
 		if (error > MAX_URI_LEN) {
 			status = SURITOOLONG;
@@ -103,16 +104,11 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 			status = SNOTFOUND;
 			write_log(DEBUG, "request not found\n");
 		}
-
 		send_response(peerfd, msg_buffer, status, &r);
-		write_log(INFO, "<<< %s\n", inet_ntoa(peer_addr->sin_addr));
-		puts(msg_buffer);
+		write_log(FINE, "<<< %s:%i\n%s\n", inet_ntoa(peer_addr->sin_addr), ntohs(peer_addr->sin_port), msg_buffer);
 	} else {
-		write_log(ERROR, "read_request: %i\n", (int) error);
+		write_log(ERROR, "read_request: 0x%02x\n", (int) abs(error));
 	}
-	write_log(DEBUG, "closing connection to %s\n", inet_ntoa(peer_addr->sin_addr)); 
-	/* close(peerfd); */
-	/* shutdown(peerfd, SHUT_RDWR); */
 
 	return;
 }
@@ -130,7 +126,7 @@ int
 serve_forever(int sockfd)
 {
 	write_log(DEBUG, "serve_forever()\n");
-	int		peerfd;
+	int		peerfd, pid;
 	struct sockaddr_in peer_addr;
 	socklen_t	sin_size = sizeof(struct sockaddr_in);
 
@@ -141,13 +137,21 @@ serve_forever(int sockfd)
 		bzero(&peer_addr, sizeof(struct sockaddr_in));
 		if ((peerfd = accept(sockfd, (struct sockaddr *)&peer_addr,
 				     (socklen_t *) & sin_size)) == -1) {
+			if (errno == EINTR) {
+				continue;
+			}
 			handle_error("accept");
 		} else {
-			/* thread */
-			write_log(DEBUG, "connection from %s\n", inet_ntoa(peer_addr.sin_addr));
-			accept_request(peerfd, &peer_addr);
+			if ((pid = fork()) == 0) {
+				write_log(FINE, "connection from %s:%i\n", inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port));
+				accept_request(peerfd, &peer_addr);
+				exit(0);
+			}
+			write_log(DEBUG, "forked process %i\n", pid);
 		}
 	}
+	write_log(FINEST, "closing connection %s:%i\n", inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port));
+	close(sockfd);
 
 	return EXIT_SUCCESS;
 }

@@ -36,7 +36,7 @@ _start_message(char *msg_buf)
 	write_log(DEBUG, "_start_message()\n");
 	char		*c;
 
-	strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_RESPONSE_LEN);
+	strncpy(msg_buf, "HTTP/1.0 404 Not Found\r\n", HTTP_RESPONSE_LEN);
 
 	return 0; /* no error */
 }
@@ -191,7 +191,6 @@ read_request(struct request *req, int peerfd)
 	bzero(req, sizeof(struct request));
 
 	if ((req_len = read(peerfd, req_buf, REQUEST_BUFFER_LEN)) != -1) {
-		puts(req_buf);
 		req_buf[req_len + 1] = '\0';
 		req->method = _get_request_method(req_buf);
 		_get_request_uri(req_buf, req);

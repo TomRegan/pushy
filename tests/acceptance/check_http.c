@@ -88,7 +88,7 @@ START_TEST(test_error_not_found_gets_404_response)
 	char		buf[BUFFER_S + 1];
 	char		time_buffer[RFC1123_TIME_LEN + 1];
 	char		response_template[HTTP_RESPONSE_LEN + 1] = "\
-HTTP/1.1 404 Not Found\r\n\
+HTTP/1.0 404 Not Found\r\n\
 Content-Length: 19\r\n\
 Content-Type: text/html\r\n\
 Server: Pushy/0.0.1.1\r\n\

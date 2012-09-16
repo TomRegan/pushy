@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#define LEVEL 0x20 /* logging level */
+#define LEVEL 0x10 /* logging level */
 
 #define ERROR	0x01
 #define INFO	0x02
