@@ -20,6 +20,9 @@
  * @author  Tom Regan <code.tom.regan@gmail.com>
  */
 
+#ifndef REQUEST_H
+#define REQUEST_H 1
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -31,18 +34,15 @@
 #include "buffers.h"
 #include "logging.h"
 
-#ifndef REQUEST_H
-#define REQUEST_H 1
-
 /* http methods */
-#define MOPTIONS   1
-#define MGET       2
-#define MHEAD      4
-#define MPOST      8
-#define MPUT      16
-#define MDELETE   32
-#define MTRACE    64
-#define MUNKNOWN 128
+#define MOPTIONS	0x01
+#define MGET		0x02
+#define MHEAD		0x04
+#define MPOST		0x08
+#define MPUT		0x10
+#define MDELETE		0x20
+#define MTRACE		0x40
+#define MUNKNOWN	0x80
 
 /* timestamp format */
 #define RFC1123_TIME "%a, %d %b %Y %H:%M:%S GMT"
@@ -55,15 +55,18 @@
 struct
 http_version
 {
-  char major;
-  char minor;
+	char		major;
+	char		minor;
 };
 
 struct
 request
 {
-  uint8_t method;
-  char uri[MAX_URI_LEN];
+	struct http_version	http_version;
+	uint8_t		method;
+	char		uri [MAX_URI_LEN];
+	char		header [REQUEST_HEAD_LEN];
+	char		body [REQUEST_BODY_LEN];
 };
 
 /**

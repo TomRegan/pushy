@@ -49,7 +49,6 @@
 int
 init_server()
 {
-	write_log(DEBUG, "init_server()\n");
 	int		sockfd;
 	struct sockaddr_in local_addr;
 
@@ -84,7 +83,6 @@ init_server()
 void
 accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
-	write_log(DEBUG, "accept_request()\n");
 	static int	req_no;
 	char		msg_buffer[HTTP_RESPONSE_LEN + 1];
 	char           *status;
@@ -125,12 +123,11 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 int
 serve_forever(int sockfd)
 {
-	write_log(DEBUG, "serve_forever()\n");
 	int		peerfd, pid;
 	struct sockaddr_in peer_addr;
 	socklen_t	sin_size = sizeof(struct sockaddr_in);
 
-	write_log(INFO, "accepting connections on %i\n", PORT);
+	printf("accepting connections on %i\n", PORT);
 
 	while (1) {
 
@@ -161,7 +158,7 @@ main(int argc, char *argv[])
 {
 	int		sockfd;
 
-	write_log(INFO, "Pushy/0.0.1.1 starting\n");
+	printf("Pushy/0.0.1.1 starting\n");
 
 	sockfd = init_server();
 	serve_forever(sockfd);

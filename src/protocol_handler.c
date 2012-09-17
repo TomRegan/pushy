@@ -26,14 +26,12 @@
 size_t
 _remaining_size(int max, char *buf)
 {
-	write_log(DEBUG, "_remaining_size()\n");
 	return (max - strnlen(buf, max));
 }
 
 int8_t
 _start_message(char *msg_buf)
 {
-	write_log(DEBUG, "_start_message()\n");
 	char		*c;
 
 	strncpy(msg_buf, "HTTP/1.0 404 Not Found\r\n", HTTP_RESPONSE_LEN);
@@ -44,7 +42,6 @@ _start_message(char *msg_buf)
 int8_t
 _insert_content_length(char *msg_buf, char *msg_body)
 {
-	write_log(DEBUG, "_insert_content_length()\n");
 	const size_t	MAX_LEN = _remaining_size(HTTP_HEAD_LEN, msg_buf);
 	const char	*fmt_buf = "Content-Length: %zu\r\n";
 
@@ -63,7 +60,6 @@ _insert_content_length(char *msg_buf, char *msg_body)
 int8_t
 _finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
 {
-	write_log(DEBUG, "_finalise_message_body()\n");
 	const char     *fmt_buf = "{\"%s\":\"%s\"}\r\n";
 
 	snprintf(msg_body, HTTP_BODY_LEN, fmt_buf, req->uri, rsp_str);
@@ -74,7 +70,6 @@ _finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
 int8_t
 _insert_date(char *msg_buf)
 {
-	write_log(DEBUG, "_insert_date()\n");
 	const size_t	MAX_LEN = _remaining_size(HTTP_HEAD_LEN, msg_buf);
 	const char	*fmt_buf = "Date: %s\r\n\r\n";
 
@@ -96,7 +91,6 @@ _insert_date(char *msg_buf)
 int8_t
 _finalise_message(char *msg_buf, char *msg_body)
 {
-	write_log(DEBUG, "_finalise_message()\n");
 	char		*c;
 
 	strncat(msg_buf, msg_body, HTTP_RESPONSE_LEN);
@@ -107,7 +101,6 @@ _finalise_message(char *msg_buf, char *msg_body)
 uint8_t
 _get_request_method(char *request_line)
 {
-	write_log(DEBUG, "_get_request_method()\n");
 	if (strncmp(request_line, "GET", 3) == 0) {
 		return MGET;
 	}
@@ -120,7 +113,6 @@ _get_request_method(char *request_line)
 int8_t
 _get_request_uri(char *request_line, struct request *req)
 {
-	write_log(DEBUG, "_get_request_uri()\n");
 	char		tmp_buf   [MAX_URI_LEN + 1];
 	int		i = MAX_URI_LEN;
 
@@ -143,7 +135,6 @@ _get_request_uri(char *request_line, struct request *req)
 uint8_t
 send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
 {
-	write_log(DEBUG, "send_response()\n");
 	char		msg_body  [HTTP_BODY_LEN + 1];
 	uint8_t		error = 0;
 
@@ -183,7 +174,6 @@ read_request(struct request *req, int peerfd)
 	 * the recv manpage, which talks about nonblocking
 	 * sockets.
 	 */
-	write_log(DEBUG, "read_request()\n");
 	char		req_buf   [REQUEST_BUFFER_LEN + 1];
 	int		req_len = 0;
 
