@@ -83,13 +83,11 @@ init_server()
 void
 accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
-	static int	req_no;
 	char		msg_buffer[HTTP_RESPONSE_LEN + 1];
 	char           *status;
 	struct request	r;
 	int		error = 0;
 
-	write_log(FINE, "request #%i\n", ++req_no);
 	write_log(FINE, ">>> %s:%i\n", inet_ntoa(peer_addr->sin_addr), ntohs(peer_addr->sin_port));
 
 	if ((error = read_request(&r, peerfd)) > 0) {

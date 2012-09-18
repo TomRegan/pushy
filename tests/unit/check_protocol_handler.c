@@ -7,6 +7,7 @@
 void _finalise_message_body(char*, struct request*, char*);
 int8_t _get_request_uri(char*, struct request*);
 unsigned char _get_request_method(char *);
+int8_t _get_protocol_version(char*, struct request*);
 
 START_TEST (test_request_url_is_parsed)
 {
@@ -36,6 +37,38 @@ START_TEST (test_method_and_uri_are_returned)
   _get_request_uri(request, &r);
   fail_unless(MGET == r.method);
   fail_unless(0 == strcmp(r.uri, "/foo/zen/happy.html"));
+}
+END_TEST
+
+START_TEST (test_protocol_version_is_parsed)
+{
+	char		*request = "GET / HTTP/1.1\r\n";
+	struct request	req;
+	int		ret = 1;
+
+	bzero(&req, sizeof(struct request));
+	ret = _get_protocol_version(request, &req);
+
+	fail_unless(1 == req.http_version.major);
+	fail_unless(1 == req.http_version.minor);
+	fail_unless(0 == ret);
+}
+END_TEST
+
+START_TEST (test_protocol_version_returns_minus_one_on_error)
+{
+	char		*request = "GET / HAPPY/0.9\r\n", *request2, *request3;
+	struct request	req;
+
+	bzero(&req, sizeof(struct request));
+	fail_unless(-1 == _get_protocol_version(request, &req));
+
+	request2 = "FOOZEN/000.9\r\n";
+	fail_unless(-1 == _get_protocol_version(request, &req));
+
+	request3 = "";
+	fail_unless(-1 == _get_protocol_version(request, &req));
+
 }
 END_TEST
 
@@ -138,3 +171,27 @@ START_TEST (test_generate_json_body)
 	fail_unless(0 == strcmp("{\"/\":\"unit-test\"}\r\n", msg_body));
 }
 END_TEST
+
+Suite *
+request_suite(void)
+{
+	Suite *s = suite_create("protocol handler");
+
+	TCase *tc_request = tcase_create("protocol_handler");
+
+	tcase_add_test(tc_request, test_request_url_is_parsed);
+	tcase_add_test(tc_request, test_method_and_uri_are_returned);
+	tcase_add_test(tc_request, test_get_request_sets_correct_flag);
+	tcase_add_test(tc_request, test_post_request_sets_correct_flag);
+	tcase_add_test(tc_request, test_unknown_request_sets_correct_flag);
+	tcase_add_test(tc_request, test_empty_request_sets_correct_flag);
+	tcase_add_test(tc_request, test_long_request_sets_correct_flag);
+	tcase_add_test(tc_request, test_non_ascii_sets_correct_flag);
+	tcase_add_test(tc_request, test_generate_json_body);
+	tcase_add_test(tc_request, test_protocol_version_is_parsed);
+	tcase_add_test(tc_request, test_protocol_version_returns_minus_one_on_error);
+
+	suite_add_tcase(s, tc_request);
+
+	return s;
+}

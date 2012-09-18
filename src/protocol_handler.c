@@ -99,6 +99,36 @@ _finalise_message(char *msg_buf, char *msg_body)
 }
 
 uint8_t
+send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
+{
+	char		msg_body  [HTTP_BODY_LEN + 1];
+	uint8_t		error = 0;
+
+	_finalise_message_body(msg_body, req, rsp_str);
+
+	_start_message(msg_buf);
+
+	if (_insert_content_length(msg_buf, msg_body) == -1) {
+		error |= 0x1 << 7;
+	}
+	strncat(msg_buf, "Content-Type: text/html\r\n", HTTP_HEAD_LEN);
+	strncat(msg_buf, "Server: Pushy/0.0.1.1\r\n", HTTP_HEAD_LEN);
+
+	if (_insert_date(msg_buf) == -1) {
+		error |= 0x1;
+	}
+	_finalise_message(msg_buf, msg_body);
+
+	if (error) {
+		/* it's some kind of server error */
+		msg_body[0] = '\0';
+	}
+	write(peerfd, msg_buf, strnlen(msg_buf, HTTP_RESPONSE_LEN));
+
+	return error;
+}
+
+uint8_t
 _get_request_method(char *request_line)
 {
 	if (strncmp(request_line, "GET", 3) == 0) {
@@ -132,34 +162,20 @@ _get_request_uri(char *request_line, struct request *req)
 	return 0; /* no error */
 }
 
-uint8_t
-send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
+int8_t
+_get_protocol_version(char *request, struct request *req)
 {
-	char		msg_body  [HTTP_BODY_LEN + 1];
-	uint8_t		error = 0;
+	int		i = 0;
+	char		*substr;
 
-	_finalise_message_body(msg_body, req, rsp_str);
-
-	_start_message(msg_buf);
-
-	if (_insert_content_length(msg_buf, msg_body) == -1) {
-		error |= 0x1 << 7;
+	if ((substr = strstr(request, "HTTP")) == NULL) {
+		return -1; /* no http verison */
 	}
-	strncat(msg_buf, "Content-Type: text/html\r\n", HTTP_HEAD_LEN);
-	strncat(msg_buf, "Server: Pushy/0.0.1.1\r\n", HTTP_HEAD_LEN);
 
-	if (_insert_date(msg_buf) == -1) {
-		error |= 0x1;
-	}
-	_finalise_message(msg_buf, msg_body);
+	req->http_version.major = atoi(&substr [5]);
+	req->http_version.minor = atoi(&substr [7]);
 
-	if (error) {
-		/* it's some kind of server error */
-		msg_body[0] = '\0';
-	}
-	write(peerfd, msg_buf, strnlen(msg_buf, HTTP_RESPONSE_LEN));
-
-	return error;
+	return 0; /* no error */
 }
 
 int

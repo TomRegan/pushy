@@ -30,5 +30,6 @@
 #define REQUEST_BODY_LEN 1024
 #define REQUEST_HEAD_LEN 1024
 #define MAX_URI_LEN 1024
+#define LINE_BUF_LEN 256
 
 #endif /* BUFFERS_H */
