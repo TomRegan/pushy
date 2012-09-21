@@ -34,7 +34,7 @@ _start_message(char *msg_buf)
 {
 	char		*c;
 
-	strncpy(msg_buf, "HTTP/1.0 404 Not Found\r\n", HTTP_RESPONSE_LEN);
+	strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_RESPONSE_LEN);
 
 	return 0; /* no error */
 }
@@ -51,7 +51,8 @@ _insert_content_length(char *msg_buf, char *msg_body)
 		return -1; /* header too long */
 	}
 
-	snprintf(tmp_buf, sizeof(tmp_buf), fmt_buf, strnlen(msg_body, HTTP_RESPONSE_LEN));
+	snprintf(tmp_buf, sizeof(tmp_buf), fmt_buf,
+			strnlen(msg_body, HTTP_RESPONSE_LEN));
 	strncat(msg_buf, tmp_buf, HTTP_HEAD_LEN);
 
 	return 0; /* no error */
@@ -60,7 +61,7 @@ _insert_content_length(char *msg_buf, char *msg_body)
 int8_t
 _finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
 {
-	const char     *fmt_buf = "{\"%s\":\"%s\"}\r\n";
+	const char     *fmt_buf = "{\"request\":\"%s\",\"response\":\"%s\"}\r\n";
 
 	snprintf(msg_body, HTTP_BODY_LEN, fmt_buf, req->uri, rsp_str);
 
@@ -111,7 +112,7 @@ send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
 	if (_insert_content_length(msg_buf, msg_body) == -1) {
 		error |= 0x1 << 7;
 	}
-	strncat(msg_buf, "Content-Type: text/html\r\n", HTTP_HEAD_LEN);
+	strncat(msg_buf, "Content-Type: application/json\r\n", HTTP_HEAD_LEN);
 	strncat(msg_buf, "Server: Pushy/0.0.1.1\r\n", HTTP_HEAD_LEN);
 
 	if (_insert_date(msg_buf) == -1) {
@@ -168,7 +169,8 @@ _get_protocol_version(char *request, struct request *req)
 	int		i = 0;
 	char		*substr;
 
-	if ((substr = strstr(request, "HTTP")) == NULL) {
+	if ((substr = strstr(request, "HTTP")) == NULL
+		|| strlen(substr) < 10) {
 		return -1; /* no http verison */
 	}
 
@@ -178,36 +180,42 @@ _get_protocol_version(char *request, struct request *req)
 	return 0; /* no error */
 }
 
-int
-read_request(struct request *req, int peerfd)
+int8_t
+_read_header(int peerfd, char * buf, struct request *req)
 {
-	/*
-	 * TODO
-	 * There is, under certain circumstances, a very long block
-	 * on read. It's hard to figure out what's happening,
-	 * it's possible that calling recv may be a better way
-	 * to handle requests. There may also be something in
-	 * the recv manpage, which talks about nonblocking
-	 * sockets.
-	 */
-	char		req_buf   [REQUEST_BUFFER_LEN + 1];
-	int		req_len = 0;
+	req->method = _get_request_method(buf);
+	(void) _get_request_uri(buf, req);
+	(void) _get_protocol_version(buf, req);
+	/* TODO: if POST read content length */
 
-	bzero(req_buf, REQUEST_BUFFER_LEN);
-	bzero(req, sizeof(struct request));
+	return 0; /* no error */
+}
 
-	if ((req_len = read(peerfd, req_buf, REQUEST_BUFFER_LEN)) != -1) {
-		req_buf[req_len + 1] = '\0';
-		req->method = _get_request_method(req_buf);
-		_get_request_uri(req_buf, req);
-	} else if (req_len == 0) {
-		return -0x1; /* no read */
+int
+read_request(int peerfd, struct request *req)
+{
+	int		nbytes;
+	char		buf [REQUEST_BUFFER_LEN + 1];
+
+	nbytes =  0;
+	nbytes = recv(peerfd, buf, REQUEST_HEAD_LEN, 0);
+	buf[nbytes] = '\0';
+
+	if (nbytes) {
+		/* TODO: return more granular errors form _read... */
+		if ((_read_header(peerfd, buf, req)) == -1) {
+			return EREADHEAD;
+		}
+		/* TODO: if POST and content length > 0 read body */
 	} else {
-		return -(0x1 << 7); /* read error */
+		if (nbytes == 0) {
+			return ECONNRST; /* connection reset */
+		} else if (nbytes == -1) {
+			return ESOCKERR; /* read error */
+		} else {
+			return EUNKNOWN;
+		}
 	}
 
-	if (req->method == MUNKNOWN) {
-		return -(0x1 << 2); /* unknown request method */
-	}
-	return req_len;
+	return nbytes; /* no error */
 }

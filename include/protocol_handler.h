@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdbool.h>
 
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -51,6 +52,14 @@
 /* error status messages */
 #define SNOTFOUND "not-found"
 #define SURITOOLONG "uri too long"
+#define SENDOFBUFFER "uri too long"
+
+/* read errors */
+#define ECONNRST	-0x00
+#define EREADHEAD	-0x01
+#define ESOCKERR	-0x02
+#define EUNKNOWN	-0x04
+
 
 struct
 http_version
@@ -60,22 +69,29 @@ http_version
 };
 
 struct
+body
+{
+	char		buf [REQUEST_BODY_LEN + 1];
+	struct body	*next;
+};
+
+struct
 request
 {
 	struct http_version	http_version;
+	uint16_t	content_len;
 	uint8_t		method;
-	char		uri [MAX_URI_LEN];
-	char		header [REQUEST_HEAD_LEN];
-	char		body [REQUEST_BODY_LEN];
+	char		uri [MAX_URI_LEN + 1];
+	struct body	*body;
 };
 
 /**
  * Co-oridinates receiving a request
- * @param req an empty request record
  * @param peerfd the connected peer form which to read
- * @return The length of the uri up to (MAX_URI_LEN)
+ * @param req an empty request record
+ * @return 0 on success or a negative number indicating error
  */
-int read_request(struct request*, int);
+int read_request(int, struct request*);
 
 /**
  * Builds a response string and sends it to a peer

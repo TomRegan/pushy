@@ -55,6 +55,7 @@ init_server()
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		handle_error("socket");
 	}
+
 	bzero(&local_addr, sizeof(struct sockaddr_in));
 	local_addr.sin_family = AF_INET;
 	local_addr.sin_port = htons(PORT);
@@ -85,25 +86,33 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
 	char		msg_buffer[HTTP_RESPONSE_LEN + 1];
 	char           *status;
-	struct request	r;
-	int		error = 0;
+	struct request	req;
+	int		nbytes = 0;
 
-	write_log(FINE, ">>> %s:%i\n", inet_ntoa(peer_addr->sin_addr), ntohs(peer_addr->sin_port));
-
-	if ((error = read_request(&r, peerfd)) > 0) {
-		write_log(FINE, "read %i bytes from %s:%i\n", error, inet_ntoa(peer_addr->sin_addr), ntohs(peer_addr->sin_port)); 
-
-		if (error > MAX_URI_LEN) {
-			status = SURITOOLONG;
-			write_log(DEBUG, "request too long\n");
-		} else {
-			status = SNOTFOUND;
-			write_log(DEBUG, "request not found\n");
+	while ((nbytes = read_request(peerfd, &req)) > 0) {
+		write_log(FINE, ">>> %s:%i\n%s\n",
+				inet_ntoa(peer_addr->sin_addr),
+				ntohs(peer_addr->sin_port), req.uri);
+		send_response(peerfd, msg_buffer, SNOTFOUND, &req);
+		if (nbytes) {
+			write_log(FINER, "read %i bytes\n", nbytes);
+			write_log(FINE, "<<< %s:%i\n%s\n",
+					inet_ntoa(peer_addr->sin_addr),
+					ntohs(peer_addr->sin_port), msg_buffer);
 		}
-		send_response(peerfd, msg_buffer, status, &r);
-		write_log(FINE, "<<< %s:%i\n%s\n", inet_ntoa(peer_addr->sin_addr), ntohs(peer_addr->sin_port), msg_buffer);
-	} else {
-		write_log(ERROR, "read_request: 0x%02x\n", (int) abs(error));
+
+	}
+
+	if (nbytes == ECONNRST) {
+		write_log(FINE, "connection reset by client: %s:%i\n",
+				inet_ntoa(peer_addr->sin_addr),
+				ntohs(peer_addr->sin_port));
+	} else if (nbytes == EREADHEAD) {
+		write_log(ERROR, "reading request header: 0x%02x\n",
+				(int) abs(nbytes));
+	} else if (nbytes == ESOCKERR) {
+		write_log(ERROR, "reading from socket: 0x%02x\n",
+				(int) abs(nbytes));
 	}
 
 	return;
@@ -122,8 +131,8 @@ int
 serve_forever(int sockfd)
 {
 	int		peerfd, pid;
-	struct sockaddr_in peer_addr;
 	socklen_t	sin_size = sizeof(struct sockaddr_in);
+	struct sockaddr_in peer_addr;
 
 	printf("accepting connections on %i\n", PORT);
 
@@ -138,14 +147,21 @@ serve_forever(int sockfd)
 			handle_error("accept");
 		} else {
 			if ((pid = fork()) == 0) {
-				write_log(FINE, "connection from %s:%i\n", inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port));
+				write_log(FINE, "connection from %s:%i\n",
+						inet_ntoa(peer_addr.sin_addr),
+						ntohs(peer_addr.sin_port));
 				accept_request(peerfd, &peer_addr);
+				write_log(FINE, "done serving request from %s:%i\n",
+						inet_ntoa(peer_addr.sin_addr),
+						ntohs(peer_addr.sin_port));
 				exit(0);
 			}
 			write_log(DEBUG, "forked process %i\n", pid);
 		}
 	}
-	write_log(FINEST, "closing connection %s:%i\n", inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port));
+	write_log(FINEST, "closing connection %s:%i\n",
+			inet_ntoa(peer_addr.sin_addr),
+			ntohs(peer_addr.sin_port));
 	close(sockfd);
 
 	return EXIT_SUCCESS;

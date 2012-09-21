@@ -57,18 +57,20 @@ END_TEST
 
 START_TEST (test_protocol_version_returns_minus_one_on_error)
 {
-	char		*request = "GET / HAPPY/0.9\r\n", *request2, *request3;
+	char		*request = "GET / HAPPY/0.9\r\n", *request2, *request3, *request4;
 	struct request	req;
 
 	bzero(&req, sizeof(struct request));
 	fail_unless(-1 == _get_protocol_version(request, &req));
 
 	request2 = "FOOZEN/000.9\r\n";
-	fail_unless(-1 == _get_protocol_version(request, &req));
+	fail_unless(-1 == _get_protocol_version(request2, &req));
 
 	request3 = "";
-	fail_unless(-1 == _get_protocol_version(request, &req));
+	fail_unless(-1 == _get_protocol_version(request3, &req));
 
+	request4 = "GET / HTTP/1.\r\n";
+	fail_unless(-1 == _get_protocol_version(request4, &req));
 }
 END_TEST
 
@@ -168,7 +170,7 @@ START_TEST (test_generate_json_body)
 		.uri = "/"
 	};
 	_finalise_message_body(msg_body, &req, msg_content);
-	fail_unless(0 == strcmp("{\"/\":\"unit-test\"}\r\n", msg_body));
+	fail_unless(0 == strcmp("{\"request\":\"/\",\"response\":\"unit-test\"}\r\n", msg_body));
 }
 END_TEST
 
