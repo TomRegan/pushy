@@ -112,6 +112,7 @@ send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
 	if (_insert_content_length(msg_buf, msg_body) == -1) {
 		error |= 0x1 << 7;
 	}
+	strncat(msg_buf, "Connection: close\r\n", HTTP_HEAD_LEN);
 	strncat(msg_buf, "Content-Type: application/json\r\n", HTTP_HEAD_LEN);
 	strncat(msg_buf, "Server: Pushy/0.0.1.1\r\n", HTTP_HEAD_LEN);
 
