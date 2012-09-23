@@ -33,6 +33,7 @@
 #include "../include/protocol_handler.h"
 #include "../include/buffers.h"
 #include "../include/logging.h"
+#include "../include/cache.h"
 
 #define PORT 55080
 #define BACKLOG 50

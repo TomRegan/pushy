@@ -3,7 +3,7 @@ program_SRCS := $(wildcard *.c)
 program_OBJS := ${program_SRCS:.c=.o}
 
 LIBDIR := ../lib/
-OBJS := protocol_handler.o logging.o
+OBJS := protocol_handler.o logging.o cache.o
 TARGET := ../build
 
 ifeq ($(mode),release)
