@@ -86,12 +86,10 @@ cache_clear(void)
 {
 	size_t		i;
 
-	i = 0;
-	for (; i < CACHE_KEYS; ++i) {
-		if (CACHE.keys [i] == NULL) {
-			continue;
+	for (i = 0; i < CACHE_KEYS; ++i) {
+		if (CACHE.keys [i] != NULL) {
+			_rm_recurse(CACHE.keys [i]);
 		}
-		_rm_recurse(CACHE.keys [i]);
 	}
 	return 0; /* no error */
 }
