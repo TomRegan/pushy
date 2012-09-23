@@ -23,12 +23,31 @@ START_TEST (test_add_to_cache)
 {
 	char		*key = "AAA";
 	char		*value = "BBB";
+
+	cache_init();
 	fail_unless(0 == cache_add(key, value));
 
 	/*
 	 * This simulates cache retrieval.
 	 */
 	fail_unless(0 == strcmp("BBB", CACHE.keys [195]->value));
+	cache_clear();
+	fail_unless(0 == cache_size());
+}
+END_TEST
+
+START_TEST (test_multiple_adds_to_cache)
+{
+	cache_init();
+	fail_unless(0 == cache_size());
+	fail_unless(0 == cache_add("AAA", "aaa"));
+	fail_unless(1 == cache_size());
+	fail_unless(0 == cache_add("BBB", "bbb"));
+	fail_unless(2 == cache_size());
+	fail_unless(0 == cache_add("CCC", "ccc"));
+	fail_unless(3 == cache_size());
+	cache_clear();
+	fail_unless(0 == cache_size());
 }
 END_TEST
 
@@ -38,15 +57,18 @@ START_TEST (test_update_cache)
 	char		*value_a = "BBB";
 	char		*value_b = "CCC";
 
-	/*
-	 * This simulates initialization.
-	 */
-	bzero(CACHE.keys, sizeof(CACHE.keys));
+
+	cache_init();
+	fail_unless(0 == cache_size());
 
 	fail_unless(0 == cache_add(key, value_a));
+	fail_unless(1 == cache_size());
 	fail_unless(0 == strcmp("BBB", CACHE.keys [195]->value));
 	fail_unless(1 == cache_add(key, value_b));
+	fail_unless(1 == cache_size());
 	fail_unless(0 == strcmp("CCC", CACHE.keys [195]->value));
+	cache_clear();
+	fail_unless(0 == cache_size());
 }
 END_TEST
 
@@ -59,6 +81,7 @@ cache_suite(void)
 
 	tcase_add_test(tc_cache, test_sum_returns_checksum);
 	tcase_add_test(tc_cache, test_add_to_cache);
+	tcase_add_test(tc_cache, test_multiple_adds_to_cache);
 	tcase_add_test(tc_cache, test_update_cache);
 
 	suite_add_tcase(s, tc_cache);

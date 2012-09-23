@@ -28,12 +28,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "logging.h"
+
 #define CACHE_KEYS		997
 #define RECORD_KEY_LEN		255
 #define RECORD_ENTRY_LEN	1023
 
 struct record {
-	size_t		size;
 	char		key [RECORD_KEY_LEN + 1];
 	char		value [RECORD_ENTRY_LEN + 1];
 	struct record	*l;
@@ -41,6 +42,7 @@ struct record {
 };
 
 struct cache {
+	size_t		size;
 	struct record	*keys [CACHE_KEYS];
 };
 
@@ -91,6 +93,14 @@ cache_rm(char*);
  */
 int8_t
 cache_clear(void);
+
+/**
+ * Get the number of records in the cache
+ *
+ * @return  number of records
+ */
+size_t
+cache_size(void);
 
 struct cache CACHE;
 sem_t CACHE_LOCK;
