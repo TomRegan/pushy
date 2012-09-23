@@ -198,7 +198,6 @@ read_request(int peerfd, struct request *req)
 	int		nbytes;
 	char		buf [REQUEST_BUFFER_LEN + 1];
 
-	nbytes =  0;
 	nbytes = recv(peerfd, buf, REQUEST_HEAD_LEN, 0);
 	buf[nbytes] = '\0';
 

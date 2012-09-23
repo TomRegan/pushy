@@ -1,3 +1,6 @@
+ifndef V
+	QUIET = @
+endif
 check_NAME := test_runner
 check_SRCS := $(wildcard *.c)
 check_OBJS := ${check_SRCS:.c=.o}
@@ -7,19 +10,19 @@ TARGET := ../../build/unit-test
 
 program_OBJS := $(wildcard ../../lib/*.o)
 
-CFLAGS += -L/opt/local/lib -I/opt/local/include -I../../include
+CFLAGS += -L/opt/local/lib -I/opt/local/include -I../../include -Qunused-arguments
 
 .PHONY: all clean copy-to-test
 
 all: $(check_NAME)
 
 $(check_NAME): $(check_OBJS)
-	test -d $(TARGET) || mkdir $(TARGET)
-	$(CC) $(CFLAGS) -o $(TARGET)/$(check_NAME) $(check_OBJS) $(program_OBJS) $(check_LIBS)
+	$(QUIET)test -d $(TARGET) || mkdir $(TARGET)
+	$(QUIET)$(CC) $(CFLAGS) -o $(TARGET)/$(check_NAME) $(check_OBJS) $(program_OBJS) $(check_LIBS)
 
 check: all
-	$(TARGET)/./test_runner
+	$(QUIET)$(TARGET)/./test_runner
 
 clean :
-	$(RM) $(check_NAME) $(check_OBJS) $(TARGET)/$(check_NAME) *.o
-	test ! -d $(TARGET) || rmdir $(TARGET)
+	$(QUIET)$(RM) $(check_NAME) $(check_OBJS) $(TARGET)/$(check_NAME) *.o
+	$(QUIET)test ! -d $(TARGET) || rmdir $(TARGET)

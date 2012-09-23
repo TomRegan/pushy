@@ -4,7 +4,7 @@ void
 write_log(int level, char *fmt, ...)
 {
 	char		*label;
-	char		log_buf [LOG_BUFFER_LEN+1];
+	char		log_buf [LOG_BUFFER_LEN + 1];
 	va_list		ap;
 
 	if (LEVEL < level) {
@@ -34,8 +34,8 @@ write_log(int level, char *fmt, ...)
 			label = "[oops]\t";
 	}
 
-	strncpy(log_buf, label, sizeof(log_buf));
-	strncat(log_buf, fmt, sizeof(log_buf));
+	strncpy(log_buf, label, LOG_BUFFER_LEN);
+	strncat(log_buf, fmt, (LOG_BUFFER_LEN - strlen(log_buf)));
 	va_start(ap, fmt);
 	vprintf(log_buf, ap);
 	va_end(ap);

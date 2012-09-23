@@ -1,22 +1,26 @@
+ifndef V
+	QUIET = @
+endif
+
 TARGET := build
 
 all: httpd acceptance-test unit-test
 
 httpd:
-	+$(MAKE) -C src
+	+$(QUIET)$(MAKE) -C src
 
 unit-test:
-	+$(MAKE) -C tests/unit
+	+$(QUIET)$(MAKE) -C tests/unit
 
 acceptance-test:
-	+$(MAKE) -C tests/acceptance
+	+$(QUIET)$(MAKE) -C tests/acceptance
 
 check: all
-	+$(MAKE) -C tests/unit check
+	+$(QUIET)$(MAKE) -C tests/unit check
 
 clean:
-	+$(MAKE) -C src clean
-	+$(MAKE) -C tests/unit clean
-	+$(MAKE) -C tests/acceptance clean
-	test ! -d $(TARGET) || rmdir $(TARGET)
-	test ! -d lib/ || rm  lib/*.o
+	+$(QUIET)$(MAKE) -C src clean
+	+$(QUIET)$(MAKE) -C tests/unit clean
+	+$(QUIET)$(MAKE) -C tests/acceptance clean
+	$(QUIET)test ! -d $(TARGET) || rmdir $(TARGET)
+	$(QUIET)test ! -d lib/ || rm -r lib/
