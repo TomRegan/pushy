@@ -22,6 +22,9 @@ _hash(char *buf, size_t len)
 void
 _rm_recurse(struct record *r)
 {
+	if (r == NULL) {
+		return;
+	}
 	write_log(DEBUG, "visiting %s:%s %p\n", r->key, r->value, r);
 	if (r->l != NULL) {
 		_rm_recurse(r->l);
@@ -36,6 +39,49 @@ _rm_recurse(struct record *r)
 		free(r);
 		CACHE.size--;
 	} 
+}
+
+struct record**
+_rm(char * key, struct record *this, struct record **relink_ref)
+{
+	struct record	**tmp = NULL;
+
+	if (this == NULL) {
+		return NULL;
+	}
+	write_log(DEBUG, "visiting %s:%s %p\n", this->key, this->value, this);
+	/* the left node is for deletion */
+	if (this->l != NULL && 0 == strncmp(key, this->l->key, RECORD_KEY_LEN)) {
+		tmp = _rm(key, this->l, NULL);
+		(void) free(this->l);
+		this->l = *tmp;
+	}
+	/* the right node is for deletion */
+	if (this->r != NULL && 0 == strncmp(key, this->r->key, RECORD_KEY_LEN)) {
+		tmp = _rm(key, this->r, NULL);
+		(void) free(this->r);
+		this->r = *tmp;
+	}
+	/* this is the node for deletion */
+	if (0 == strncmp(key, this->key, RECORD_ENTRY_LEN)) {
+		/*
+		 * So I don't have to think about this again: &(this->l) is
+		 * intended to pass a reference to the left link pointer.
+		 * This will be reassigned in a later frame to point at the
+		 * new child node.
+		 */
+		(void) _rm(key, this->r, &(this->l));
+		return &(this->r);
+	}
+	/* relink the node */
+	if (relink_ref != NULL) {
+		if (this->l == NULL) {
+			this->l = *relink_ref;
+		} else {
+			(void) _rm(key, this->l, &(this->l));
+		}
+	}
+	return NULL;
 }
 
 int8_t
