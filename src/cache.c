@@ -64,14 +64,23 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 	}
 	/* this is the node for deletion */
 	if (0 == strncmp(key, this->key, RECORD_ENTRY_LEN)) {
+		/* terminal node, delete */
+		if (this->l == NULL && this->r == NULL) {
+			return NULL;
+		}
 		/*
 		 * So I don't have to think about this again: &(this->l) is
 		 * intended to pass a reference to the left link pointer.
 		 * This will be reassigned in a later frame to point at the
 		 * new child node.
 		 */
-		(void) _rm(key, this->r, &(this->l));
-		return &(this->r);
+		if (this->r != NULL) {
+			/* relink the left node */
+			(void) _rm(key, this->r, &(this->l));
+			return &(this->r);
+		} else {
+			return &(this->l);
+		}
 	}
 	/* relink the node */
 	if (relink_ref != NULL) {
