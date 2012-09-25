@@ -25,7 +25,7 @@ _rm_recurse(struct record *r)
 	if (r == NULL) {
 		return;
 	}
-	write_log(DEBUG, "visiting %s:%s %p\n", r->key, r->value, r);
+	write_log(TEST_DEBUG, "visiting %s:%s %p\n", r->key, r->value, r);
 	if (r->l != NULL) {
 		_rm_recurse(r->l);
 		r->l = NULL;
@@ -35,59 +35,76 @@ _rm_recurse(struct record *r)
 		r->r = NULL;
 	}
 	if (r->l == NULL && r->r == NULL) {
-		write_log(DEBUG, "deallocing %s:%s %p\n", r->key, r->value, r);
+		write_log(TEST_DEBUG, "deallocing %s:%s %p\n", r->key, r->value, r);
 		free(r);
 		CACHE.size--;
 	} 
 }
 
-struct record**
+struct record*
 _rm(char * key, struct record *this, struct record **relink_ref)
 {
-	struct record	**tmp = NULL;
+	struct record	*tmp = NULL;
 
 	if (this == NULL) {
 		return NULL;
 	}
-	write_log(DEBUG, "visiting %s:%s %p\n", this->key, this->value, this);
+	write_log(TEST_DEBUG, "_rm: visiting %s:%s %p\n", this->key, this->value, this);
 	/* the left node is for deletion */
 	if (this->l != NULL && 0 == strncmp(key, this->l->key, RECORD_KEY_LEN)) {
+		write_log(TEST_DEBUG, "_rm: left node of %s is for deletion %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
 		tmp = _rm(key, this->l, NULL);
+		write_log(TEST_DEBUG, "_rm: freeing %s:%s %p\n", this->l->key, this->l->value, this->l);
 		(void) free(this->l);
-		this->l = *tmp;
+		this->l = tmp;
+		write_log(TEST_DEBUG, "_rm: left node of %s is now %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
 	}
 	/* the right node is for deletion */
 	if (this->r != NULL && 0 == strncmp(key, this->r->key, RECORD_KEY_LEN)) {
+		write_log(TEST_DEBUG, "_rm: right node of %s is for deletion %s:%s %p\n", this->key, this->r->key, this->r->value, this->r);
 		tmp = _rm(key, this->r, NULL);
+		write_log(TEST_DEBUG, "_rm: freeing %s:%s %p\n", this->r->key, this->r->value, this->r);
 		(void) free(this->r);
-		this->r = *tmp;
+		this->r = tmp;
+		write_log(TEST_DEBUG, "_rm: right node of %s is now %s:%s %p\n", this->key, this->r->key, this->r->value, this->r);
 	}
 	/* this is the node for deletion */
 	if (0 == strncmp(key, this->key, RECORD_ENTRY_LEN)) {
 		/* terminal node, delete */
 		if (this->l == NULL && this->r == NULL) {
+			write_log(TEST_DEBUG, "_rm: freeing %s:%s %p\n", this->key, this->value, this);
+			(void) free(this);
 			return NULL;
 		}
-		/*
-		 * So I don't have to think about this again: &(this->l) is
-		 * intended to pass a reference to the left link pointer.
-		 * This will be reassigned in a later frame to point at the
-		 * new child node.
-		 */
+
 		if (this->r != NULL) {
 			/* relink the left node */
-			(void) _rm(key, this->r, &(this->l));
-			return &(this->r);
+			if (this->l != NULL) {
+				/*
+				 * If the left link of the node to be deleted
+				 * is not null, the left link of the left
+				 * terminal node of the new right subtree will
+				 * need to link to its node.
+				 */
+				write_log(TEST_DEBUG, "_rm: relinking from %s:%s %p\n", this->key, this->value, this);
+				(void) _rm(key, this->r, &this->l);
+			}
+			return this->r;
 		} else {
-			return &(this->l);
+			write_log(TEST_DEBUG, "_rm: relinking: returning left node %s:%s %p\n", this->l->key, this->l->value, this->l);
+			return this->l;
 		}
+		return NULL;
 	}
 	/* relink the node */
 	if (relink_ref != NULL) {
+		write_log(TEST_DEBUG, "_rm: thinking about relinking in %s:%s %p\n", this->key, this->value, this);
 		if (this->l == NULL) {
+			write_log(TEST_DEBUG, "_rm: setting left node of %s to %s\n", this->key, (*relink_ref)->key);
 			this->l = *relink_ref;
 		} else {
-			(void) _rm(key, this->l, &(this->l));
+			write_log(TEST_DEBUG, "_rm: won't relink %s to %s\n", this->key, (*relink_ref)->key);
+			(void) _rm(key, this->l, relink_ref);
 		}
 	}
 	return NULL;
@@ -109,7 +126,7 @@ cache_add(char* k, char* v)
 	hash = _hash(k, strlen(k));
 
 	if (CACHE.keys [hash] != NULL) {
-		write_log(DEBUG, "updating %s with value %s\n", k, v);
+		write_log(TEST_DEBUG, "updating %s with value %s\n", k, v);
 		/*
 		 * Updating the key as well as the value...
 		 * This covers a bug that I'm not focussing on, where
@@ -127,7 +144,7 @@ cache_add(char* k, char* v)
 					sizeof(struct record))) == NULL) {
 		return -1; /* malloc failed */
 	}
-	write_log(DEBUG, "creating record %s with value %s\n", k, v);
+	write_log(TEST_DEBUG, "creating record %s with value %s\n", k, v);
 	strncpy(CACHE.keys [hash]->key, k, RECORD_KEY_LEN);
 	strncpy(CACHE.keys [hash]->value, v, RECORD_ENTRY_LEN);
 	CACHE.keys [hash]->l = NULL;
