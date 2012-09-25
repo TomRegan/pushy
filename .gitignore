@@ -6,6 +6,7 @@
 *.out
 *~
 .*
+!.gdbinit
 *.BAK
 #*#
 lib/
@@ -13,3 +14,4 @@ httpd
 docs/
 test_runner
 build/
+Vagrantfile
