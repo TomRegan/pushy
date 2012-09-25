@@ -30,6 +30,9 @@ write_log(int level, char *fmt, ...)
 		case DEBUG:
 			label = "[debug]\t";
 			break;
+		case TEST_DEBUG:
+			label = "[test_debug]\t";
+			break;
 		default:
 			label = "[oops]\t";
 	}

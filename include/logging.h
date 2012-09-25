@@ -12,6 +12,7 @@
 #define FINER	0x08
 #define FINEST	0x10
 #define DEBUG	0x20
+#define TEST_DEBUG	0x40
 
 #define LEVEL DEBUG /* logging level */
 
