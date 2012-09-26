@@ -83,8 +83,7 @@ START_TEST (test_remove_from_cache)
 	d = malloc(sizeof(struct record));
 	e = malloc(sizeof(struct record));
 	f = malloc(sizeof(struct record));
-	write_log(TEST_DEBUG, "BINARY TREE NODE REMOVAL TEST: MEMORY ALLOCATION");
-	write_log(TEST_DEBUG, "================================================");
+	write_log(TEST_DEBUG, "\nBINARY TREE NODE REMOVAL TEST: MEMORY ALLOCATION\n================================================\n");
 	write_log(TEST_DEBUG, "\n\ta:%p\n\tb:%p\n\tc:%p\n\td:%p\n\te:%p\n\tf:%p\n", a, b, c, d, e, f);
 	strcpy(a->key, "AAA");
 	strcpy(a->value, "aaa");
@@ -123,14 +122,37 @@ START_TEST (test_remove_from_cache)
 	e->l = f;
 
 	/*
-	 * Call delete with head pointer (a), searching for b.
+	 *         a
+	 *        /
+	 *       b
+	 *      / \
+	 *     c   d
+	 *        /
+	 *       e
+	 *      /
+	 *     f
+	 *
 	 */
+	write_log(TEST_DEBUG, "\nREMOVING BBB\n============\n");
 	_rm("BBB", a, NULL);
 	fail_unless(a->l == d);
 	fail_unless(d->l == e);
 	fail_unless(e->l == f);
 	fail_unless(f->l == c);
-	free(a); free(c); free(d); free(e); free(f);
+
+	write_log(TEST_DEBUG, "\nREMOVING AAA\n============\n");
+	_rm("AAA", a, NULL);
+	fail_unless(d->l == e);
+
+	write_log(TEST_DEBUG, "\nREMOVING EEE\n============\n");
+	_rm("EEE", d, NULL);
+	fail_unless(d->l == f);
+
+	write_log(TEST_DEBUG, "\nREMOVING CCC\n============\n");
+	_rm("CCC", d, NULL);
+	fail_unless(f->l == c);
+
+	free(d); free(f);
 }
 END_TEST
 
@@ -141,8 +163,7 @@ START_TEST (test_remove_from_cache_if_tree_only_has_right_nodes)
 	b = malloc(sizeof(struct record));
 	c = malloc(sizeof(struct record));
 	d = malloc(sizeof(struct record));
-	write_log(TEST_DEBUG, "BINARY TREE NODE REMOVAL TEST: MEMORY ALLOCATION");
-	write_log(TEST_DEBUG, "================================================");
+	write_log(TEST_DEBUG, "\nBINARY TREE NODE REMOVAL TEST: MEMORY ALLOCATION\n================================================\n");
 	write_log(TEST_DEBUG, "\n\ta:%p\n\tb:%p\n\tc:%p\n\td:%p\n", a, b, c, d);
 	strcpy(a->key, "AAA");
 	strcpy(a->value, "aaa");
@@ -171,6 +192,7 @@ START_TEST (test_remove_from_cache_if_tree_only_has_right_nodes)
 	/*
 	 * Call delete with head pointer (a), searching for b.
 	 */
+	write_log(TEST_DEBUG, "\nREMOVING BBB\n============\n");
 	_rm("BBB", a, NULL);
 	fail_unless(a->r == c);
 	fail_unless(c->l == d);

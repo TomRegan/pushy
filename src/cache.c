@@ -49,33 +49,11 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 	if (this == NULL) {
 		return NULL;
 	}
+
 	write_log(TEST_DEBUG, "_rm: visiting %s:%s %p\n", this->key, this->value, this);
-	/* the left node is for deletion */
-	if (this->l != NULL && 0 == strncmp(key, this->l->key, RECORD_KEY_LEN)) {
-		write_log(TEST_DEBUG, "_rm: left node of %s is for deletion %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
-		tmp = _rm(key, this->l, NULL);
-		write_log(TEST_DEBUG, "_rm: freeing %s:%s %p\n", this->l->key, this->l->value, this->l);
-		(void) free(this->l);
-		this->l = tmp;
-		write_log(TEST_DEBUG, "_rm: left node of %s is now %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
-	}
-	/* the right node is for deletion */
-	if (this->r != NULL && 0 == strncmp(key, this->r->key, RECORD_KEY_LEN)) {
-		write_log(TEST_DEBUG, "_rm: right node of %s is for deletion %s:%s %p\n", this->key, this->r->key, this->r->value, this->r);
-		tmp = _rm(key, this->r, NULL);
-		write_log(TEST_DEBUG, "_rm: freeing %s:%s %p\n", this->r->key, this->r->value, this->r);
-		(void) free(this->r);
-		this->r = tmp;
-		write_log(TEST_DEBUG, "_rm: right node of %s is now %s:%s %p\n", this->key, this->r->key, this->r->value, this->r);
-	}
+
 	/* this is the node for deletion */
 	if (0 == strncmp(key, this->key, RECORD_ENTRY_LEN)) {
-		/* terminal node, delete */
-		if (this->l == NULL && this->r == NULL) {
-			write_log(TEST_DEBUG, "_rm: freeing %s:%s %p\n", this->key, this->value, this);
-			(void) free(this);
-			return NULL;
-		}
 
 		if (this->r != NULL) {
 			/* relink the left node */
@@ -86,27 +64,70 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 				 * terminal node of the new right subtree will
 				 * need to link to its node.
 				 */
-				write_log(TEST_DEBUG, "_rm: relinking from %s:%s %p\n", this->key, this->value, this);
 				(void) _rm(key, this->r, &this->l);
+				/*
+				 * At this point the terminal left node of the
+				 * right subtree is connceted to the left sub-
+				 * tree of this node.
+				 */
+				this->l = NULL;
 			}
-			return this->r;
+			tmp = this->r;
+			this->r = NULL;
 		} else {
-			write_log(TEST_DEBUG, "_rm: relinking: returning left node %s:%s %p\n", this->l->key, this->l->value, this->l);
-			return this->l;
+			tmp = this->l;
+			this->l = NULL;
 		}
-		return NULL;
+
+		/* terminal node, delete */
+		if (this->l == NULL && this->r == NULL) {
+			write_log(TEST_DEBUG, "_rm: freeing %s:%s %p\n", this->key, this->value, this);
+			(void) free(this);
+		}
+
+		if (tmp != NULL) {
+			write_log(TEST_DEBUG, "_rm: returning %s:%s %p\n", tmp->key, tmp->value, tmp);
+		} else {
+			write_log(TEST_DEBUG, "_rm: returning %p\n", tmp);
+		}
+		return tmp;
+
+	} else if (key [0] < this->key [0]) {
+		if (this->l != NULL && 0 == strncmp(key, this->l->key, RECORD_KEY_LEN)) {
+			/* the left node is for deletion */
+			tmp = _rm(key, this->l, NULL);
+			this->l = tmp;
+			write_log(TEST_DEBUG, "_rm: left node of %s is now %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
+		} else {
+			(void) _rm(key, this->l, NULL);
+		}
+	} else if (this != NULL && key [0] > this->key [0]) {
+		if (this->r != NULL && 0 == strncmp(key, this->r->key, RECORD_KEY_LEN)) {
+			/* the right node is for deletion */
+			tmp = _rm(key, this->r, NULL);
+			this->r = tmp;
+			write_log(TEST_DEBUG, "_rm: right node of %s is now %s:%s %p\n", this->key, this->r->key, this->r->value, this->r);
+		} else {
+			(void) _rm(key, this->r, NULL);
+		}
 	}
+
 	/* relink the node */
 	if (relink_ref != NULL) {
-		write_log(TEST_DEBUG, "_rm: thinking about relinking in %s:%s %p\n", this->key, this->value, this);
 		if (this->l == NULL) {
-			write_log(TEST_DEBUG, "_rm: setting left node of %s to %s\n", this->key, (*relink_ref)->key);
+			/*
+			 * This is the terminal node of some left subtree,
+			 * and it should be linked to the old left subtree of
+			 * the node to be deleted.
+			 */
 			this->l = *relink_ref;
+			write_log(TEST_DEBUG, "_rm: left node of %s is now %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
 		} else {
-			write_log(TEST_DEBUG, "_rm: won't relink %s to %s\n", this->key, (*relink_ref)->key);
 			(void) _rm(key, this->l, relink_ref);
 		}
 	}
+
+
 	return NULL;
 }
 
