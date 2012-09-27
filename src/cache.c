@@ -44,17 +44,25 @@ _rm_recurse(struct record *r)
 struct record*
 _rm(char * key, struct record *this, struct record **relink_ref)
 {
-	struct record	*tmp = NULL;
+	int		cmp;
+	struct record	*tmp = this;
 
-	if (this == NULL) {
-		return NULL;
+	if (tmp == NULL) {
+		return tmp;
 	}
+
+	/*
+	 * The root node should return a reference to itself. The only time
+	 * this function should return another reference is when it is
+	 * relinking a subtree.
+	 */
 
 	write_log(TEST_DEBUG, "_rm: visiting %s:%s %p\n", this->key, this->value, this);
 
-	/* this is the node for deletion */
-	if (0 == strncmp(key, this->key, RECORD_ENTRY_LEN)) {
+	cmp = strncmp(key, this->key, RECORD_ENTRY_LEN);
 
+	if (0 == cmp) {
+		/* this is the node for deletion */
 		if (this->r != NULL) {
 			/* relink the left node */
 			if (this->l != NULL) {
@@ -85,28 +93,19 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 			(void) free(this);
 		}
 
-		if (tmp != NULL) {
-			write_log(TEST_DEBUG, "_rm: returning %s:%s %p\n", tmp->key, tmp->value, tmp);
-		} else {
-			write_log(TEST_DEBUG, "_rm: returning %p\n", tmp);
-		}
-		return tmp;
-
-	} else if (key [0] < this->key [0]) {
+	} else if (relink_ref == NULL && 0 > cmp) {
 		if (this->l != NULL && 0 == strncmp(key, this->l->key, RECORD_KEY_LEN)) {
 			/* the left node is for deletion */
-			tmp = _rm(key, this->l, NULL);
-			this->l = tmp;
-			write_log(TEST_DEBUG, "_rm: left node of %s is now %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
+			this->l = _rm(key, this->l, NULL);
+			if (this->l != NULL) write_log(TEST_DEBUG, "_rm: left node of %s is now %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
 		} else {
 			(void) _rm(key, this->l, NULL);
 		}
-	} else if (this != NULL && key [0] > this->key [0]) {
+	} else if (relink_ref == NULL && 0 < cmp) {
 		if (this->r != NULL && 0 == strncmp(key, this->r->key, RECORD_KEY_LEN)) {
 			/* the right node is for deletion */
-			tmp = _rm(key, this->r, NULL);
-			this->r = tmp;
-			write_log(TEST_DEBUG, "_rm: right node of %s is now %s:%s %p\n", this->key, this->r->key, this->r->value, this->r);
+			this->r = _rm(key, this->r, NULL);
+			if (this->r != NULL) write_log(TEST_DEBUG, "_rm: right node of %s is now %s:%s %p\n", this->key, this->r->key, this->r->value, this->r);
 		} else {
 			(void) _rm(key, this->r, NULL);
 		}
@@ -121,14 +120,15 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 			 * the node to be deleted.
 			 */
 			this->l = *relink_ref;
-			write_log(TEST_DEBUG, "_rm: left node of %s is now %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
+			if (this->l != NULL) write_log(TEST_DEBUG, "_rm: left node of %s is now %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
 		} else {
 			(void) _rm(key, this->l, relink_ref);
 		}
 	}
 
+	write_log(TEST_DEBUG, "_rm: returning %p from %s\n", tmp, this->key);
 
-	return NULL;
+	return tmp;
 }
 
 int8_t
