@@ -14,7 +14,7 @@
 #define DEBUG	0x20
 #define TEST_DEBUG	0x40
 
-#define LEVEL TEST_DEBUG /* logging level */
+#define LEVEL DEBUG /* logging level */
 
 #define LOG_BUFFER_LEN 256
 
