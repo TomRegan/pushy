@@ -4,7 +4,7 @@ endif
 
 TARGET := build
 
-all: httpd acceptance-test unit-test
+all: httpd unit-test
 
 httpd:
 	+$(QUIET)$(MAKE) -C src
@@ -12,7 +12,7 @@ httpd:
 unit-test:
 	+$(QUIET)$(MAKE) -C tests/unit
 
-acceptance-test:
+acceptance:
 	+$(QUIET)$(MAKE) -C tests/acceptance
 
 check: all
@@ -21,6 +21,5 @@ check: all
 clean:
 	+$(QUIET)$(MAKE) -C src clean
 	+$(QUIET)$(MAKE) -C tests/unit clean
-	+$(QUIET)$(MAKE) -C tests/acceptance clean
 	$(QUIET)test ! -d $(TARGET) || rmdir $(TARGET)
 	$(QUIET)test ! -d lib/ || rm -r lib/
