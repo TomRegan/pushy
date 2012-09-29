@@ -25,7 +25,6 @@ _rm_recurse(struct record *r)
 	if (r == NULL) {
 		return;
 	}
-	write_log(TEST_DEBUG, "visiting %s:%s %p\n", r->key, r->value, r);
 	if (r->l != NULL) {
 		_rm_recurse(r->l);
 		r->l = NULL;
@@ -35,7 +34,7 @@ _rm_recurse(struct record *r)
 		r->r = NULL;
 	}
 	if (r->l == NULL && r->r == NULL) {
-		write_log(TEST_DEBUG, "deallocing %s:%s %p\n", r->key, r->value, r);
+		log_ln(MEM_DEBUG, "freeing %s:%s %p\n", r->key, r->value, r);
 		free(r);
 		CACHE.size--;
 	} 
@@ -85,7 +84,7 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 
 		/* terminal node, delete */
 		if (this->l == NULL && this->r == NULL) {
-			write_log(DEBUG, "freeing %s:%s %p\n", this->key, this->value, this);
+			log_ln(MEM_DEBUG, "freeing %s:%s %p\n", this->key, this->value, this);
 			free(this);
 		}
 
@@ -138,7 +137,6 @@ cache_add(char* k, char* v)
 	hash = _hash(k, strlen(k));
 
 	if (CACHE.keys [hash] != NULL) {
-		write_log(TEST_DEBUG, "updating %s with value %s\n", k, v);
 		/*
 		 * Updating the key as well as the value...
 		 * This covers a bug that I'm not focussing on, where
@@ -156,7 +154,6 @@ cache_add(char* k, char* v)
 					sizeof(struct record))) == NULL) {
 		return -1; /* malloc failed */
 	}
-	write_log(TEST_DEBUG, "creating record %s with value %s\n", k, v);
 	strncpy(CACHE.keys [hash]->key, k, RECORD_KEY_LEN);
 	strncpy(CACHE.keys [hash]->value, v, RECORD_ENTRY_LEN);
 	CACHE.keys [hash]->l = NULL;

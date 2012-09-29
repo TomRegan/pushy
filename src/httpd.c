@@ -91,29 +91,20 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 	int		nbytes = 0;
 
 	while ((nbytes = read_request(peerfd, &req)) > 0) {
-		write_log(FINE, ">>> %s:%i\n%s\n",
-				inet_ntoa(peer_addr->sin_addr),
-				ntohs(peer_addr->sin_port), req.uri);
+		log_conn(FINE, peer_addr, ">>> %s\n", req.uri);
 		send_response(peerfd, msg_buffer, SNOTFOUND, &req);
 		if (nbytes) {
-			write_log(FINER, "read %i bytes\n", nbytes);
-			write_log(FINE, "<<< %s:%i\n%s\n",
-					inet_ntoa(peer_addr->sin_addr),
-					ntohs(peer_addr->sin_port), msg_buffer);
+			log_ln(FINER, "read %i bytes\n", nbytes);
+			log_conn(FINE, peer_addr, "<<< %s\n", msg_buffer);
 		}
-
 	}
 
 	if (nbytes == ECONNRST) {
-		write_log(FINE, "connection reset by client: %s:%i\n",
-				inet_ntoa(peer_addr->sin_addr),
-				ntohs(peer_addr->sin_port));
+		log_conn(FINE, peer_addr, "connection reset by client\n");
 	} else if (nbytes == EREADHEAD) {
-		write_log(ERROR, "reading request header: 0x%02x\n",
-				(int) abs(nbytes));
+		log_ln(ERROR, "reading request header: 0x%02x\n", (int) abs(nbytes));
 	} else if (nbytes == ESOCKERR) {
-		write_log(ERROR, "reading from socket: 0x%02x\n",
-				(int) abs(nbytes));
+		log_ln(ERROR, "reading from socket: 0x%02x\n", (int) abs(nbytes));
 	}
 
 	return;
@@ -146,16 +137,12 @@ serve_forever(int sockfd)
 		} else {
 			if ((pid = fork()) == 0) {
 				close(sockfd);
-				write_log(FINE, "connection from %s:%i\n",
-						inet_ntoa(peer_addr.sin_addr),
-						ntohs(peer_addr.sin_port));
+				log_conn(FINE, &peer_addr, "connected\n");
 				accept_request(peerfd, &peer_addr);
-				write_log(FINE, "done serving request from %s:%i\n",
-						inet_ntoa(peer_addr.sin_addr),
-						ntohs(peer_addr.sin_port));
+				log_conn(FINE, &peer_addr, "done serving request\n");
 				exit(0);
 			}
-			write_log(DEBUG, "forked process %i\n", pid);
+			log_ln(DEBUG, "forked process %i\n", pid);
 			close(peerfd);
 		}
 	}

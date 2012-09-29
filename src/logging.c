@@ -1,15 +1,9 @@
 #include "../include/logging.h"
 
-void
-write_log(int level, char *fmt, ...)
+char*
+_label(level)
 {
 	char		*label;
-	char		log_buf [LOG_BUFFER_LEN + 1];
-	va_list		ap;
-
-	if (LEVEL < level) {
-		return;
-	}
 
 	switch (level) {
 		case ERROR:
@@ -30,14 +24,45 @@ write_log(int level, char *fmt, ...)
 		case DEBUG:
 			label = "[debug]\t";
 			break;
-		case TEST_DEBUG:
-			label = "[test_debug]\t";
+		case MEM_DEBUG:
+			label = "[memory_debug]\t";
 			break;
 		default:
 			label = "[oops]\t";
 	}
+	return label;
+}
 
-	strncpy(log_buf, label, LOG_BUFFER_LEN);
+void
+log_ln(int level, char *fmt, ...)
+{
+	char		log_buf [LOG_BUFFER_LEN + 1];
+	va_list		ap;
+
+	if (LEVEL < level) {
+		return;
+	}
+
+	strncpy(log_buf, _label(level), LOG_BUFFER_LEN);
+	strncat(log_buf, fmt, (LOG_BUFFER_LEN - strlen(log_buf)));
+	va_start(ap, fmt);
+	vprintf(log_buf, ap);
+	va_end(ap);
+}
+
+void
+log_conn(int level, struct sockaddr_in *sockaddr, char *fmt, ...)
+{
+	char		log_buf [LOG_BUFFER_LEN + 1], tmp_buf[LOG_BUFFER_LEN + 1];
+	va_list		ap;
+
+	if (LEVEL < level) {
+		return;
+	}
+
+	strncpy(log_buf, _label(level), LOG_BUFFER_LEN);
+	sprintf(tmp_buf, "[%s:%hu] ", inet_ntoa(sockaddr->sin_addr), ntohs(sockaddr->sin_port));
+	strncat(log_buf, tmp_buf, (LOG_BUFFER_LEN - strlen(log_buf)));
 	strncat(log_buf, fmt, (LOG_BUFFER_LEN - strlen(log_buf)));
 	va_start(ap, fmt);
 	vprintf(log_buf, ap);
