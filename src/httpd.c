@@ -142,12 +142,10 @@ serve_forever(int sockfd)
 		bzero(&peer_addr, sizeof(struct sockaddr_in));
 		if ((peerfd = accept(sockfd, (struct sockaddr *)&peer_addr,
 				     (socklen_t *) & sin_size)) == -1) {
-			if (errno == EINTR) {
-				continue;
-			}
 			handle_error("accept");
 		} else {
 			if ((pid = fork()) == 0) {
+				close(sockfd);
 				write_log(FINE, "connection from %s:%i\n",
 						inet_ntoa(peer_addr.sin_addr),
 						ntohs(peer_addr.sin_port));
@@ -158,12 +156,9 @@ serve_forever(int sockfd)
 				exit(0);
 			}
 			write_log(DEBUG, "forked process %i\n", pid);
+			close(peerfd);
 		}
 	}
-	write_log(FINEST, "closing connection %s:%i\n",
-			inet_ntoa(peer_addr.sin_addr),
-			ntohs(peer_addr.sin_port));
-	close(sockfd);
 
 	return EXIT_SUCCESS;
 }
