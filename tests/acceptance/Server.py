@@ -26,12 +26,17 @@ import subprocess, time
 class Server(object):
 
     attempts = 0
+    logfile = subprocess.PIPE # no logging
+
+    @staticmethod
+    def attachLogger(logfile):
+        Server.logfile = open(logfile, 'w')
 
     @staticmethod
     def start():
         if Server.attempts > 2:
             exit()
-        Server.p = subprocess.Popen("../../build/httpd", stdout=subprocess.PIPE)
+        Server.p = subprocess.Popen("../../build/httpd", stdout=Server.logfile)
         time.sleep(1)
         Server.p.poll()
         if not Server.p.returncode == None:

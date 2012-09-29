@@ -21,14 +21,16 @@
 # @author  Tom Regan <code.tom.regan@gmail.com>
 #
 
-import unittest
+import unittest, time
 from Server import Server
 from HttpConnection import HttpConnection
+from Browser import Chrome
 
 class Tests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        Server.attachLogger('at.log')
         Server.start()
 
     @classmethod
@@ -43,6 +45,23 @@ class Tests(unittest.TestCase):
         conn.close()
 
         self.assertTrue(expectBody in response)
+
+    def testChromeRequest(self):
+
+
+        for i in range(250):
+            now = time.time()
+            conn = HttpConnection()
+            response = conn.send(Chrome.request)
+            conn.close()
+            #
+            # Each request should takes less than 5 thousandths of
+            # of a second. This isn't a functional requirement, it's
+            # just to flag up code changes that impact performance.
+            #
+            self.assertLess((time.time() - now), 0.005)
+            self.assertTrue(Chrome.expectBody in response)
+
 
 
 if __name__ == '__main__':

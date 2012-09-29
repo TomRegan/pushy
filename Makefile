@@ -12,7 +12,7 @@ httpd:
 unit-test:
 	+$(QUIET)$(MAKE) -C tests/unit
 
-acceptance:
+at: httpd
 	+$(QUIET)$(MAKE) -C tests/acceptance
 
 check: all
