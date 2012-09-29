@@ -49,7 +49,7 @@ class Tests(unittest.TestCase):
     def testChromeRequest(self):
 
 
-        for i in range(250):
+        for i in range(500):
             now = time.time()
             conn = HttpConnection()
             response = conn.send(Chrome.request)
