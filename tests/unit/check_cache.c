@@ -74,6 +74,19 @@ START_TEST (test_update_cache)
 }
 END_TEST
 
+START_TEST (test_remove_from_cache)
+{
+	cache_init();
+	fail_unless(0 == cache_size());
+
+	fail_unless(0 == cache_add("/foo/bar", "spam"));
+	fail_unless(1 == cache_size());
+	fail_unless(0 == cache_rm("/foo/bar"));
+	fail_unless(0 == cache_size());
+	fail_unless(-1 == cache_rm("not-a-key"));
+}
+END_TEST
+
 Suite *
 cache_suite(void)
 {
@@ -85,6 +98,7 @@ cache_suite(void)
 	tcase_add_test(tc_cache, test_add_to_cache);
 	tcase_add_test(tc_cache, test_multiple_adds_to_cache);
 	tcase_add_test(tc_cache, test_update_cache);
+	tcase_add_test(tc_cache, test_remove_from_cache);
 
 	suite_add_tcase(s, tc_cache);
 

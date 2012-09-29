@@ -57,14 +57,10 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 	 * relinking a subtree.
 	 */
 
-	write_log(TEST_DEBUG, "_rm: visiting %s:%s %p\n", this->key, this->value, this);
-
 	cmp = strncmp(key, this->key, RECORD_ENTRY_LEN);
 
-	if (0 == cmp) {
-		/* this is the node for deletion */
+	if (0 == cmp) { /* this is the node for deletion */
 		if (this->r != NULL) {
-			/* relink the left node */
 			if (this->l != NULL) {
 				/*
 				 * If the left link of the node to be deleted
@@ -89,23 +85,21 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 
 		/* terminal node, delete */
 		if (this->l == NULL && this->r == NULL) {
-			write_log(TEST_DEBUG, "_rm: freeing %s:%s %p\n", this->key, this->value, this);
-			(void) free(this);
+			write_log(DEBUG, "freeing %s:%s %p\n", this->key, this->value, this);
+			free(this);
 		}
 
-	} else if (relink_ref == NULL && 0 > cmp) {
+	} else if (relink_ref == NULL && 0 > cmp) { /* node is in left subtree */
 		if (this->l != NULL && 0 == strncmp(key, this->l->key, RECORD_KEY_LEN)) {
 			/* the left node is for deletion */
 			this->l = _rm(key, this->l, NULL);
-			if (this->l != NULL) write_log(TEST_DEBUG, "_rm: left node of %s is now %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
 		} else {
 			(void) _rm(key, this->l, NULL);
 		}
-	} else if (relink_ref == NULL && 0 < cmp) {
+	} else if (relink_ref == NULL && 0 < cmp) { /* node is in right subtree */
 		if (this->r != NULL && 0 == strncmp(key, this->r->key, RECORD_KEY_LEN)) {
 			/* the right node is for deletion */
 			this->r = _rm(key, this->r, NULL);
-			if (this->r != NULL) write_log(TEST_DEBUG, "_rm: right node of %s is now %s:%s %p\n", this->key, this->r->key, this->r->value, this->r);
 		} else {
 			(void) _rm(key, this->r, NULL);
 		}
@@ -120,13 +114,10 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 			 * the node to be deleted.
 			 */
 			this->l = *relink_ref;
-			if (this->l != NULL) write_log(TEST_DEBUG, "_rm: left node of %s is now %s:%s %p\n", this->key, this->l->key, this->l->value, this->l);
 		} else {
 			(void) _rm(key, this->l, relink_ref);
 		}
 	}
-
-	write_log(TEST_DEBUG, "_rm: returning %p from %s\n", tmp, this->key);
 
 	return tmp;
 }
@@ -171,6 +162,21 @@ cache_add(char* k, char* v)
 	CACHE.keys [hash]->l = NULL;
 	CACHE.keys [hash]->r = NULL;
 	CACHE.size++;
+	return 0; /* no error */
+}
+
+int8_t
+cache_rm(char *k)
+{
+	uint16_t	hash;
+
+	hash = _hash(k, strlen(k));
+	if (CACHE.keys [hash] != NULL) {
+		_rm(k, CACHE.keys [hash], NULL);
+		CACHE.size--;
+	} else {
+		return -1; /* not found */
+	}
 	return 0; /* no error */
 }
 
