@@ -5,6 +5,7 @@
 *.dylib
 *.out
 *.pyc
+*.log
 *~
 .*
 !.gdbinit
