@@ -113,7 +113,7 @@ send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
 		error |= 0x1 << 7;
 	}
 	strncat(msg_buf, "Connection: close\r\n", HTTP_HEAD_LEN);
-	strncat(msg_buf, "Content-Type: application/json\r\n", HTTP_HEAD_LEN);
+	strncat(msg_buf, "Content-Type: application/json; charset=utf-8\r\n", HTTP_HEAD_LEN);
 	strncat(msg_buf, "Server: Pushy/0.0.1.1\r\n", HTTP_HEAD_LEN);
 
 	if (_insert_date(msg_buf) == -1) {
