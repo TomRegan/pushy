@@ -24,7 +24,7 @@
 import unittest, time
 from Server import Server
 from HttpConnection import HttpConnection
-from Browser import Chrome
+from Browser import Chrome, Firefox
 
 class Tests(unittest.TestCase):
 
@@ -46,10 +46,19 @@ class Tests(unittest.TestCase):
 
         self.assertTrue(expectBody in response)
 
+    def testCharacterEncodingSpecified(self):
+
+        expectField = 'Content-Type: application/json; charset=utf-8'
+
+        conn = HttpConnection()
+        response = conn.send("GET / HTTP/1.1")
+        conn.close()
+
+        self.assertTrue(expectField.lower() in response.lower())
+
     def testChromeRequest(self):
 
-
-        for i in range(500):
+        for i in range(300):
             now = time.time()
             conn = HttpConnection()
             response = conn.send(Chrome.request)
@@ -61,6 +70,16 @@ class Tests(unittest.TestCase):
             #
             self.assertLess((time.time() - now), 0.005)
             self.assertTrue(Chrome.expectBody in response)
+
+    def testFirefoxRequest(self):
+
+        for i in range(300):
+            now = time.time()
+            conn = HttpConnection()
+            response = conn.send(Firefox.request)
+            conn.close()
+            self.assertLess((time.time() - now), 0.005)
+            self.assertTrue(Firefox.expectBody in response)
 
 
 

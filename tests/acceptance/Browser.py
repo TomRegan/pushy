@@ -22,7 +22,7 @@
 #
 
 class Chrome(object):
-        request = 'GET /chrome-test HTTP/1.1\r\n\
+    request = 'GET /chrome-test HTTP/1.1\r\n\
 Host: localhost:55080\r\n\
 Connection: keep-alive\r\n\
 Cache-Control: max-age=0\r\n\
@@ -32,4 +32,19 @@ Accept-Encoding: gzip,deflate,sdch\r\n\
 Accept-Language: en-US,en;q=0.8\r\n\
 Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3\r\n\r\n'
 
-        expectBody = '{"request":"/chrome-test","response":"not-found"}'
+    expectBody = '{"request":"/chrome-test","response":"not-found"}'
+
+class Firefox(object):
+    request ="GET /firefox-test HTTP/1.1\r\n\
+    Host: localhost:55080\r\n\
+    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:14.0)\r\n\
+    Gecko/20100101 Firefox/14.0.1\r\n\
+    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n\
+    Accept-Language: en-gb,en;q=0.5\r\n\
+    Accept-Encoding: gzip, deflate\r\n\
+    DNT: 1\r\n\
+    Connection: keep-alive\r\n\
+    Cache-Control: max-age=0\r\n\r\n"
+
+    expectBody = '{"request":"/firefox-test","response":"not-found"}'
+
