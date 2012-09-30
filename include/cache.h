@@ -70,11 +70,12 @@ cache_add(char*, char*);
  *
  * @param  Key
  * @param  Buffer in which to store the value
+ * @param  Size of the buffer passed as param 2
  *
  * @return  0 on success, -1 if not found
  */
 int8_t
-cache_rtrv(char*, char*);
+cache_rtrv(char*, char [], size_t);
 
 /**
  * Removes the record for the given key.

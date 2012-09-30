@@ -12,10 +12,6 @@ _hash(char *buf, size_t len)
 		cksum += (uint8_t) buf [i];
 	}
 
-	/*
-	 * This will always return a value which is no larger then
-	 * the cardinality of the cache.
-	 */
 	return cksum % CACHE_KEYS;
 }
 
@@ -159,6 +155,13 @@ cache_add(char* k, char* v)
 	CACHE.keys [hash]->l = NULL;
 	CACHE.keys [hash]->r = NULL;
 	CACHE.size++;
+	return 0; /* no error */
+}
+
+int8_t
+cache_rtrv(char *key, char rtrv_buf [], size_t len)
+{
+	strncpy(rtrv_buf, "{\"request\":\"/SYSTEM\",\"version\":\"0.0.1.1\"}\r\n", len);
 	return 0; /* no error */
 }
 

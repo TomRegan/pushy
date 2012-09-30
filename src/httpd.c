@@ -53,6 +53,8 @@ init_server()
 	int		sockfd;
 	struct sockaddr_in local_addr;
 
+	cache_add("SYSTEM", "{\"request\":\"/SYSTEM\",\"version\":\"0.0.1.1\"}");
+
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		handle_error("socket");
 	}

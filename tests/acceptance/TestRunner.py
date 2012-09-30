@@ -81,6 +81,15 @@ class Tests(unittest.TestCase):
             self.assertLess((time.time() - now), 0.005)
             self.assertTrue(Firefox.expectBody in response)
 
+    def testRequestForSystem(self):
+
+        expectBody = '{"request":"/SYSTEM","version":"0.0.1.1"}'
+
+        conn = HttpConnection()
+        response = conn.send("GET /SYSTEM HTTP/1.1")
+        conn.close()
+
+        self.assertTrue(expectBody in response)
 
 
 if __name__ == '__main__':

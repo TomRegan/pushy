@@ -61,8 +61,16 @@ _insert_content_length(char *msg_buf, char *msg_body)
 int8_t
 _finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
 {
-	const char     *fmt_buf = "{\"request\":\"%s\",\"response\":\"%s\"}\r\n";
+	const char     *fmt_buf;
+	char		rtrv_buf [HTTP_BODY_LEN + 1];
 
+	if (strncmp("/SYSTEM", req->uri, MAX_URI_LEN) == 0) {
+		if (cache_rtrv("SYSTEM", rtrv_buf, HTTP_BODY_LEN) == 0) {
+			fmt_buf = rtrv_buf;
+		}
+	} else {
+		fmt_buf = "{\"request\":\"%s\",\"response\":\"%s\"}\r\n";
+	}
 	snprintf(msg_body, HTTP_BODY_LEN, fmt_buf, req->uri, rsp_str);
 
 	return 0; /* no error */
@@ -202,7 +210,7 @@ read_request(int peerfd, struct request *req)
 	buf[nbytes] = '\0';
 
 	if (nbytes) {
-		/* TODO: return more granular errors form _read... */
+		/* TODO: return more granular errors from _read... */
 		if ((_read_header(peerfd, buf, req)) == -1) {
 			return EREADHEAD;
 		}

@@ -33,6 +33,7 @@
 #include <stdint.h>
 #include "buffers.h"
 #include "logging.h"
+#include "cache.h"
 
 /* http methods */
 #define MOPTIONS	0x01
