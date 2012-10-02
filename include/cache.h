@@ -103,7 +103,7 @@ cache_clear(void);
 size_t
 cache_size(void);
 
-struct cache CACHE;
-sem_t CACHE_LOCK;
+struct cache	CACHE;
+sem_t		*CACHE_LOCK;
 
 #endif /* CACHE_H */

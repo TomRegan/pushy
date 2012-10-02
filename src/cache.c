@@ -122,6 +122,7 @@ cache_init(void)
 {
 	CACHE.size = 0;
 	cache_clear();
+	CACHE_LOCK = sem_open("cache_lock", O_CREAT);
 	return 0; /* no error */
 }
 
@@ -131,6 +132,8 @@ cache_add(char* k, char* v)
 	uint16_t	hash;
 
 	hash = _hash(k, strlen(k));
+
+	sem_wait(CACHE_LOCK);
 
 	if (CACHE.keys [hash] != NULL) {
 		/*
@@ -148,6 +151,7 @@ cache_add(char* k, char* v)
 
 	if ((CACHE.keys [hash] = (struct record*) malloc(
 					sizeof(struct record))) == NULL) {
+		sem_post(CACHE_LOCK);
 		return -1; /* malloc failed */
 	}
 	strncpy(CACHE.keys [hash]->key, k, RECORD_KEY_LEN);
@@ -155,13 +159,16 @@ cache_add(char* k, char* v)
 	CACHE.keys [hash]->l = NULL;
 	CACHE.keys [hash]->r = NULL;
 	CACHE.size++;
+	sem_post(CACHE_LOCK);
 	return 0; /* no error */
 }
 
 int8_t
 cache_rtrv(char *key, char rtrv_buf [], size_t len)
 {
+	sem_wait(CACHE_LOCK);
 	strncpy(rtrv_buf, "{\"request\":\"/SYSTEM\",\"version\":\"0.0.1.1\"}\r\n", len);
+	sem_post(CACHE_LOCK);
 	return 0; /* no error */
 }
 
@@ -171,12 +178,17 @@ cache_rm(char *k)
 	uint16_t	hash;
 
 	hash = _hash(k, strlen(k));
+
+	sem_wait(CACHE_LOCK);
+
 	if (CACHE.keys [hash] != NULL) {
 		_rm(k, CACHE.keys [hash], NULL);
 		CACHE.size--;
 	} else {
+		sem_post(&CACHE_LOCK);
 		return -1; /* not found */
 	}
+	sem_post(CACHE_LOCK);
 	return 0; /* no error */
 }
 
@@ -185,11 +197,16 @@ cache_clear(void)
 {
 	size_t		i;
 
+	sem_wait(CACHE_LOCK);
+
 	for (i = 0; i < CACHE_KEYS; ++i) {
 		if (CACHE.keys [i] != NULL) {
 			_rm_recurse(CACHE.keys [i]);
 		}
 	}
+
+	sem_post(CACHE_LOCK);
+
 	return 0; /* no error */
 }
 
