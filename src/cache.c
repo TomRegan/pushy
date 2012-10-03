@@ -185,7 +185,7 @@ cache_rm(char *k)
 		_rm(k, CACHE.keys [hash], NULL);
 		CACHE.size--;
 	} else {
-		sem_post(&CACHE_LOCK);
+		sem_post(CACHE_LOCK);
 		return -1; /* not found */
 	}
 	sem_post(CACHE_LOCK);
