@@ -53,6 +53,8 @@ init_server()
 	int		sockfd;
 	struct sockaddr_in local_addr;
 
+	cache_init();
+
 	cache_add("SYSTEM", "{\"request\":\"/SYSTEM\",\"version\":\"0.0.1.1\"}");
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -135,6 +137,15 @@ serve_forever(int sockfd)
 		bzero(&peer_addr, sizeof(struct sockaddr_in));
 		if ((peerfd = accept(sockfd, (struct sockaddr *)&peer_addr,
 				     (socklen_t *) & sin_size)) == -1) {
+			/*
+			 * TODO:
+			 * Introducing semaphores has created an issue where
+			 * EINTR is raised somewhere, and causes accept
+			 * to fail. This needs investigating.
+			 */
+			if (errno == EINTR) {
+				continue;
+			}
 			handle_error("accept");
 		} else {
 			if ((pid = fork()) == 0) {
