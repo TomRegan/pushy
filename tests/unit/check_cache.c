@@ -4,20 +4,19 @@
 #include "../../include/logging.h"
 
 /* private functions */
-uint16_t _hash(char *buf, size_t len);
-struct record *_rm(char *, struct record *, struct record **);
+uint16_t _cksum(char *buf, size_t len);
 
 START_TEST (test_sum_returns_checksum)
 {
 	char		*buf_a = "AAA";
 	char		*buf_b = "The quick brown fox...";
 
-	fail_unless(195 == _hash(buf_a, strlen(buf_a)));
+	fail_unless(195 == _cksum(buf_a, strlen(buf_a)));
 	/*
 	 * Test the value returned is no larger that the cardinality
 	 * of the cache.
 	 */
-	fail_unless(952 == _hash(buf_b, strlen(buf_b)));
+	fail_unless(952 == _cksum(buf_b, strlen(buf_b)));
 }
 END_TEST
 

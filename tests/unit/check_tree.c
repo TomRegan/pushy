@@ -7,8 +7,7 @@
 #define LIST	0x1
 
 /* private functions */
-uint16_t _hash(char *buf, size_t len);
-struct record *_rm(char *, struct record *, struct record **);
+struct record *_tree_rm(char *, struct record *, struct record **);
 
 /* globals */
 struct record *a, *b, *c, *d, *e, *f, *EXCLUDE = NULL;
@@ -93,7 +92,7 @@ START_TEST (test_search_and_remove)
 	test_node(e);
 
 	log_ln(MEM_DEBUG, "REMOVING EEE\n");
-	fail_unless(f == _rm("EEE", f, NULL));
+	fail_unless(f == _tree_rm("EEE", f, NULL));
 	fail_unless(b->r == d);
 	fail_unless(d->l == c);
 }
@@ -107,7 +106,7 @@ START_TEST (test_remove_root_node)
 	test_node(f);
 
 	log_ln(MEM_DEBUG, "REMOVING FFF\n");
-	fail_unless(b == _rm("FFF", f, NULL));
+	fail_unless(b == _tree_rm("FFF", f, NULL));
 }
 END_TEST
 
@@ -117,7 +116,7 @@ START_TEST (test_remove_terminal_node)
 	test_node(a);
 
 	log_ln(MEM_DEBUG, "REMOVING AAA\n");
-	fail_unless(f == _rm("AAA", f, NULL));
+	fail_unless(f == _tree_rm("AAA", f, NULL));
 	fail_unless(b->l == NULL);
 }
 END_TEST
@@ -128,7 +127,7 @@ START_TEST (test_remove_and_relink)
 	test_node(b);
 
 	log_ln(MEM_DEBUG, "REMOVING BBB\n");
-	fail_unless(f == _rm("BBB", f, NULL));
+	fail_unless(f == _tree_rm("BBB", f, NULL));
 	fail_unless(f->l == e);
 	fail_unless(c->l == a);
 }
@@ -138,7 +137,7 @@ START_TEST (test_remove_from_list)
 {
 	binary_tree(LIST);
 	test_node(c);
-	fail_unless(a == _rm("CCC", a, NULL));
+	fail_unless(a == _tree_rm("CCC", a, NULL));
 	fail_unless(b->r == d);
 }
 END_TEST
