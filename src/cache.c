@@ -1,7 +1,7 @@
 #include "../include/cache.h"
 
 uint16_t
-_hash(char *buf, size_t len)
+_cksum(char *buf, size_t len)
 {
 	uint16_t	cksum;
 	size_t		i;
@@ -16,17 +16,17 @@ _hash(char *buf, size_t len)
 }
 
 void
-_rm_recurse(struct record *r)
+_tree_rm_resurse(struct record *r)
 {
 	if (r == NULL) {
 		return;
 	}
 	if (r->l != NULL) {
-		_rm_recurse(r->l);
+		_tree_rm_resurse(r->l);
 		r->l = NULL;
 	}
 	if (r->r != NULL) {
-		_rm_recurse(r->r);
+		_tree_rm_resurse(r->r);
 		r->r = NULL;
 	}
 	if (r->l == NULL && r->r == NULL) {
@@ -37,7 +37,7 @@ _rm_recurse(struct record *r)
 }
 
 struct record*
-_rm(char * key, struct record *this, struct record **relink_ref)
+_tree_rm(char * key, struct record *this, struct record **relink_ref)
 {
 	int		cmp;
 	struct record	*tmp = this;
@@ -45,12 +45,6 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 	if (tmp == NULL) {
 		return tmp;
 	}
-
-	/*
-	 * The root node should return a reference to itself. The only time
-	 * this function should return another reference is when it is
-	 * relinking a subtree.
-	 */
 
 	cmp = strncmp(key, this->key, RECORD_ENTRY_LEN);
 
@@ -63,7 +57,7 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 				 * terminal node of the new right subtree will
 				 * need to link to its node.
 				 */
-				(void) _rm(key, this->r, &this->l);
+				(void) _tree_rm(key, this->r, &this->l);
 				/*
 				 * At this point the terminal left node of the
 				 * right subtree is connceted to the left sub-
@@ -87,16 +81,16 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 	} else if (relink_ref == NULL && 0 > cmp) { /* node is in left subtree */
 		if (this->l != NULL && 0 == strncmp(key, this->l->key, RECORD_KEY_LEN)) {
 			/* the left node is for deletion */
-			this->l = _rm(key, this->l, NULL);
+			this->l = _tree_rm(key, this->l, NULL);
 		} else {
-			(void) _rm(key, this->l, NULL);
+			(void) _tree_rm(key, this->l, NULL);
 		}
 	} else if (relink_ref == NULL && 0 < cmp) { /* node is in right subtree */
 		if (this->r != NULL && 0 == strncmp(key, this->r->key, RECORD_KEY_LEN)) {
 			/* the right node is for deletion */
-			this->r = _rm(key, this->r, NULL);
+			this->r = _tree_rm(key, this->r, NULL);
 		} else {
-			(void) _rm(key, this->r, NULL);
+			(void) _tree_rm(key, this->r, NULL);
 		}
 	}
 
@@ -110,7 +104,7 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 			 */
 			this->l = *relink_ref;
 		} else {
-			(void) _rm(key, this->l, relink_ref);
+			(void) _tree_rm(key, this->l, relink_ref);
 		}
 	}
 
@@ -120,9 +114,13 @@ _rm(char * key, struct record *this, struct record **relink_ref)
 int8_t
 cache_init(void)
 {
+	sem_unlink("/pushy");
+	if (SEM_FAILED == (CACHE_LOCK = sem_open("/pushy", O_CREAT, 0660, 1))) {
+		printf("error opening semphore: %i\n", errno);
+		return -1; /* error creating semaphor */
+	}
 	CACHE.size = 0;
 	cache_clear();
-	CACHE_LOCK = sem_open("cache_lock", O_CREAT);
 	return 0; /* no error */
 }
 
@@ -131,9 +129,11 @@ cache_add(char* k, char* v)
 {
 	uint16_t	hash;
 
-	hash = _hash(k, strlen(k));
+	hash = _cksum(k, strlen(k));
 
-	sem_wait(CACHE_LOCK);
+	if (CACHE_LOCK == NULL) {
+		return -1; /* concurrency error */
+	}
 
 	if (CACHE.keys [hash] != NULL) {
 		/*
@@ -144,16 +144,18 @@ cache_add(char* k, char* v)
 		 * fix this at the moment, so this is some sensible
 		 * behaviour for the meantime.
 		 */
+		sem_wait(CACHE_LOCK);
 		strncpy(CACHE.keys [hash]->key, k, RECORD_KEY_LEN);
 		strncpy(CACHE.keys [hash]->value, v, RECORD_ENTRY_LEN);
+		sem_post(CACHE_LOCK);
 		return 1; /* value updated */
 	}
 
 	if ((CACHE.keys [hash] = (struct record*) malloc(
 					sizeof(struct record))) == NULL) {
-		sem_post(CACHE_LOCK);
 		return -1; /* malloc failed */
 	}
+	sem_wait(CACHE_LOCK);
 	strncpy(CACHE.keys [hash]->key, k, RECORD_KEY_LEN);
 	strncpy(CACHE.keys [hash]->value, v, RECORD_ENTRY_LEN);
 	CACHE.keys [hash]->l = NULL;
@@ -166,6 +168,9 @@ cache_add(char* k, char* v)
 int8_t
 cache_rtrv(char *key, char rtrv_buf [], size_t len)
 {
+	if (CACHE_LOCK == NULL) {
+		return -1; /* concurrency error */
+	}
 	sem_wait(CACHE_LOCK);
 	strncpy(rtrv_buf, "{\"request\":\"/SYSTEM\",\"version\":\"0.0.1.1\"}\r\n", len);
 	sem_post(CACHE_LOCK);
@@ -175,14 +180,17 @@ cache_rtrv(char *key, char rtrv_buf [], size_t len)
 int8_t
 cache_rm(char *k)
 {
-	uint16_t	hash;
+	uint16_t	cksum;
 
-	hash = _hash(k, strlen(k));
+	cksum = _cksum(k, strlen(k));
 
+	if (CACHE_LOCK == NULL) {
+		return -1; /* concurrency error */
+	}
 	sem_wait(CACHE_LOCK);
 
-	if (CACHE.keys [hash] != NULL) {
-		_rm(k, CACHE.keys [hash], NULL);
+	if (CACHE.keys [cksum] != NULL) {
+		_tree_rm(k, CACHE.keys [cksum], NULL);
 		CACHE.size--;
 	} else {
 		sem_post(CACHE_LOCK);
@@ -197,11 +205,14 @@ cache_clear(void)
 {
 	size_t		i;
 
+	if (CACHE_LOCK == NULL) {
+		return -1; /* concurrency error */
+	}
 	sem_wait(CACHE_LOCK);
 
 	for (i = 0; i < CACHE_KEYS; ++i) {
 		if (CACHE.keys [i] != NULL) {
-			_rm_recurse(CACHE.keys [i]);
+			_tree_rm_resurse(CACHE.keys [i]);
 		}
 	}
 

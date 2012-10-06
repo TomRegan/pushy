@@ -27,6 +27,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
+
+/* for Linux */
+#include <fcntl.h>
 
 #include "logging.h"
 
