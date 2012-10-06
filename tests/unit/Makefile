@@ -2,12 +2,17 @@ check_NAME := test_runner
 check_SRCS := $(wildcard *.c)
 check_OBJS := ${check_SRCS:.c=.o}
 check_LIBS := -lcheck
+UNAME := $(shell uname)
+
+ifeq ($(UNAME),Linux)
+	CFLAGS += -pthread
+endif
 
 TARGET := ../../build/unit-test
 
 program_OBJS := $(wildcard ../../lib/*.o)
 
-CFLAGS += -L/opt/local/lib -I/opt/local/include -I../../include -Qunused-arguments
+CFLAGS += -L/opt/local/lib -I/opt/local/include -I../../include #-Qunused-arguments
 
 .PHONY: all clean copy-to-test
 
