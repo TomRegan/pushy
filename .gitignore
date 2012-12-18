@@ -5,15 +5,23 @@
 *.dylib
 *.out
 *.pyc
+test_runner
+httpd
+build/
+lib/
+
+# Temp files and logs
 *.log
 *~
 .*
 !.gdbinit
 *.BAK
-#*#
-lib/
-httpd
-docs/
-test_runner
-build/
+\#*\#
 Vagrantfile
+
+# Qt Creator Config files
+*.config
+*.creator
+*.creator.user
+*.files
+*.includes
