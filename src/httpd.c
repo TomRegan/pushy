@@ -30,6 +30,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <signal.h>
 #include "../include/protocol_handler.h"
 #include "../include/buffers.h"
 #include "../include/logging.h"
@@ -39,6 +40,13 @@
 #define BACKLOG 50
 
 #define handle_error(msg) do { perror(msg); fprintf(stderr, msg); exit(EXIT_FAILURE); } while (0)
+
+void
+_shutdown_hook(int ignored)
+{
+    puts("Shutting down pushy...");
+    exit(0);
+}
 
 /**
  * init_server
@@ -169,6 +177,8 @@ main(int argc, char *argv[])
 	int		sockfd;
 
 	printf("Pushy/0.0.1.1 starting\n");
+
+    signal(SIGINT, _shutdown_hook);
 
 	sockfd = init_server();
 	serve_forever(sockfd);
