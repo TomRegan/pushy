@@ -35,6 +35,7 @@
 #include "../include/buffers.h"
 #include "../include/logging.h"
 #include "../include/cache.h"
+#include "../include/resource_handler.h"
 
 #define PORT 55080
 #define BACKLOG 50
@@ -97,19 +98,21 @@ init_server()
 void
 accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
-	char		msg_buffer[HTTP_RESPONSE_LEN + 1];
-	char           *status;
-	struct request	req;
-	int		nbytes = 0;
+    char            msg_buffer [HTTP_RESPONSE_LEN + 1];
+    char            rtrv_buffer [HTTP_BODY_LEN + 1];
+    char            *status;
+    struct request  req;
+    int             nbytes = 0;
 
-	while ((nbytes = read_request(peerfd, &req)) > 0) {
-		log_conn(FINE, peer_addr, ">>> %s\n", req.uri);
-		send_response(peerfd, msg_buffer, SNOTFOUND, &req);
-		if (nbytes) {
-			log_ln(FINER, "read %i bytes\n", nbytes);
-			log_conn(FINE, peer_addr, "<<< %s\n", msg_buffer);
-		}
-	}
+    while ((nbytes = read_request(peerfd, &req)) > 0) {
+        log_conn(FINE, peer_addr, ">>> %s\n", req.uri);
+        service_request(&req, rtrv_buffer, HTTP_BODY_LEN);
+        send_response(peerfd, msg_buffer, SNOTFOUND, &req);
+        if (nbytes) {
+        log_ln(FINER, "read %i bytes\n", nbytes);
+        log_conn(FINE, peer_addr, "<<< %s\n", msg_buffer);
+        }
+    }
 
 	if (nbytes == ECONNRST) {
 		log_conn(FINE, peer_addr, "connection reset by client\n");
@@ -172,16 +175,22 @@ serve_forever(int sockfd)
 }
 
 int
-main(int argc, char *argv[])
+httpd(int argc, char *argv[])
 {
-	int		sockfd;
+    int		sockfd;
 
-	printf("Pushy/0.0.1.1 starting\n");
+    printf("Pushy/0.0.1.1 starting\n");
 
     signal(SIGINT, _shutdown_hook);
 
-	sockfd = init_server();
-	serve_forever(sockfd);
+    sockfd = init_server();
+    serve_forever(sockfd);
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
+}
+
+int
+main(int argc, char *argv[])
+{
+    return httpd(argc, argv);
 }

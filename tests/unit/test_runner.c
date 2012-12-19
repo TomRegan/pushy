@@ -3,6 +3,7 @@
 #include "include/check_protocol_handler.h"
 #include "include/check_cache.h"
 #include "include/check_tree.h"
+#include "include/check_resource_handler.h"
 
 
 int
@@ -29,5 +30,12 @@ main(void)
 	srunner_run_all(tree_runner, CK_NORMAL);
 	number_failed += srunner_ntests_failed(tree_runner);
 	srunner_free(tree_runner);
+
+    Suite *resource = resource_suite();
+    SRunner *resource_runner = srunner_create(resource);
+    srunner_run_all(resource_runner, CK_NORMAL);
+    number_failed += srunner_ntests_failed(resource_runner);
+    srunner_free(resource_runner);
+
 	return (number_failed == 0) ? 0 : 1;
 }

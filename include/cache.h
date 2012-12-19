@@ -39,10 +39,10 @@
 #define RECORD_ENTRY_LEN	1023
 
 struct record {
-	char		key [RECORD_KEY_LEN + 1];
-	char		value [RECORD_ENTRY_LEN + 1];
-	struct record	*l;
-	struct record	*r;
+    char            key [RECORD_KEY_LEN + 1];
+    char            value [RECORD_ENTRY_LEN + 1];
+    struct record   *l;
+    struct record   *r;
 };
 
 struct cache {

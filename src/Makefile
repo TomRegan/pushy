@@ -3,7 +3,7 @@ program_SRCS := $(wildcard *.c)
 program_OBJS := ${program_SRCS:.c=.o}
 
 LIBDIR := ../lib/
-OBJS := protocol_handler.o logging.o cache.o
+OBJS := protocol_handler.o logging.o cache.o resource_handler.o
 TARGET := ../build
 UNAME := $(shell uname)
 

@@ -32,46 +32,46 @@ _remaining_size(int max, char *buf)
 int8_t
 _start_message(char *msg_buf)
 {
-	char		*c;
+    char            *c;
 
-	strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_RESPONSE_LEN);
+    strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_RESPONSE_LEN);
 
-	return 0; /* no error */
+    return 0; /* no error */
 }
 
 int8_t
 _insert_content_length(char *msg_buf, char *msg_body)
 {
-	const size_t	MAX_LEN = _remaining_size(HTTP_HEAD_LEN, msg_buf);
-	const char	*fmt_buf = "Content-Length: %zu\r\n";
+    const size_t    MAX_LEN = _remaining_size(HTTP_HEAD_LEN, msg_buf);
+    const char      *FMT_BUF = "Content-Length: %zu\r\n";
 
-	char		tmp_buf   [HTTP_HEAD_LEN + 1];
+    char            tmp_buf [HTTP_HEAD_LEN + 1];
 
-	if (!MAX_LEN > 0) {
-		return -1; /* header too long */
-	}
+    if (!MAX_LEN > 0) {
+        return -1; /* header too long */
+    }
 
-	snprintf(tmp_buf, sizeof(tmp_buf), fmt_buf,
-			strnlen(msg_body, HTTP_RESPONSE_LEN));
-	strncat(msg_buf, tmp_buf, HTTP_HEAD_LEN);
+    snprintf(tmp_buf, sizeof(tmp_buf), FMT_BUF,
+             strnlen(msg_body, HTTP_RESPONSE_LEN));
+    strncat(msg_buf, tmp_buf, HTTP_HEAD_LEN);
 
-	return 0; /* no error */
+    return 0; /* no error */
 }
 
 int8_t
 _finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
 {
-	const char     *fmt_buf;
-	char		rtrv_buf [HTTP_BODY_LEN + 1];
+    const char      *FMT_BUF;
+    char            rtrv_buf [HTTP_BODY_LEN + 1];
 
 	if (strncmp("/SYSTEM", req->uri, MAX_URI_LEN) == 0) {
 		if (cache_rtrv("SYSTEM", rtrv_buf, HTTP_BODY_LEN) == 0) {
-			fmt_buf = rtrv_buf;
+            FMT_BUF = rtrv_buf;
 		}
 	} else {
-		fmt_buf = "{\"request\":\"%s\",\"response\":\"%s\"}\r\n";
+        FMT_BUF = "{\"request\":\"%s\",\"response\":\"%s\"}\r\n";
 	}
-	snprintf(msg_body, HTTP_BODY_LEN, fmt_buf, req->uri, rsp_str);
+    snprintf(msg_body, HTTP_BODY_LEN, FMT_BUF, req->uri, rsp_str);
 
 	return 0; /* no error */
 }
@@ -203,27 +203,27 @@ _read_header(int peerfd, char * buf, struct request *req)
 int
 read_request(int peerfd, struct request *req)
 {
-	int		nbytes;
-	char		buf [REQUEST_BUFFER_LEN + 1];
+    int         nbytes;
+    char        buf [REQUEST_BUFFER_LEN + 1];
 
-	nbytes = recv(peerfd, buf, REQUEST_HEAD_LEN, 0);
-	buf[nbytes] = '\0';
+    nbytes = recv(peerfd, buf, REQUEST_HEAD_LEN, 0);
+    buf[nbytes] = '\0';
 
-	if (nbytes) {
-		/* TODO: return more granular errors from _read... */
-		if ((_read_header(peerfd, buf, req)) == -1) {
-			return EREADHEAD;
-		}
-		/* TODO: if POST and content length > 0 read body */
-	} else {
-		if (nbytes == 0) {
-			return ECONNRST; /* connection reset */
-		} else if (nbytes == -1) {
-			return ESOCKERR; /* read error */
-		} else {
-			return EUNKNOWN;
-		}
-	}
+    if (nbytes) {
+        /* TODO: return more granular errors from _read... */
+        if ((_read_header(peerfd, buf, req)) == -1) {
+            return EREADHEAD;
+        }
+        /* TODO: if POST and content length > 0 read body */
+    } else {
+        if (nbytes == 0) {
+            return ECONNRST; /* connection reset */
+        } else if (nbytes == -1) {
+            return ESOCKERR; /* read error */
+        } else {
+            return EUNKNOWN;
+        }
+    }
 
-	return nbytes; /* no error */
+    return nbytes; /* no error */
 }
