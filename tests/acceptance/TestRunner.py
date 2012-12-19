@@ -83,7 +83,7 @@ class Tests(unittest.TestCase):
 
     def testRequestForSystem(self):
 
-        expectBody = '{"request":"/SYSTEM","version":"0.0.1.1"}'
+        expectBody = '{"request":"/SYSTEM","response":{"version":"0.0.1.1"}}'
 
         conn = HttpConnection()
         response = conn.send("GET /SYSTEM HTTP/1.1")

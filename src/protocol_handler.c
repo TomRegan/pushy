@@ -32,8 +32,6 @@ _remaining_size(int max, char *buf)
 int8_t
 _start_message(char *msg_buf)
 {
-    char            *c;
-
     strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_RESPONSE_LEN);
 
     return 0; /* no error */
@@ -59,18 +57,32 @@ _insert_content_length(char *msg_buf, char *msg_body)
 }
 
 int8_t
-_finalise_message_body(char *msg_body, struct request *req, char *rsp_str)
+_finalise_message_body(char *msg_body, struct request *req, char *rtrv_buf, uint16_t response_code)
 {
     const char      *FMT_BUF;
-    char            rtrv_buf [HTTP_BODY_LEN + 1];
+    char            *rsp_str, tmp_rsp_str [HTTP_BODY_LEN + 1];
+    size_t          offset;
 
-	if (strncmp("/SYSTEM", req->uri, MAX_URI_LEN) == 0) {
-		if (cache_rtrv("SYSTEM", rtrv_buf, HTTP_BODY_LEN) == 0) {
-            FMT_BUF = rtrv_buf;
-		}
-	} else {
-        FMT_BUF = "{\"request\":\"%s\",\"response\":\"%s\"}\r\n";
-	}
+    offset = 3;
+    FMT_BUF = "{\"request\":\"%s\",\"response\":%s}\r\n";
+
+    if (response_code == ROK) {
+        rsp_str = rtrv_buf;
+    } else {
+        switch (response_code) {
+        case RINTERNAL:
+            snprintf(tmp_rsp_str, strlen(SINTERNAL) + offset, "\"%s\"", SINTERNAL);
+            break;
+        case RNOTFOUND:
+            snprintf(tmp_rsp_str, strlen(SNOTFOUND) + offset, "\"%s\"", SNOTFOUND);
+
+            break;
+        default:
+            snprintf(tmp_rsp_str, strlen(SINTERNAL) + offset, "\"%s\"", SINTERNAL);
+        }
+        rsp_str = tmp_rsp_str;
+    }
+
     snprintf(msg_body, HTTP_BODY_LEN, FMT_BUF, req->uri, rsp_str);
 
 	return 0; /* no error */
@@ -100,20 +112,18 @@ _insert_date(char *msg_buf)
 int8_t
 _finalise_message(char *msg_buf, char *msg_body)
 {
-	char		*c;
-
 	strncat(msg_buf, msg_body, HTTP_RESPONSE_LEN);
 
 	return 0; /* no error */
 }
 
 uint8_t
-send_response(int peerfd, char *msg_buf, char *rsp_str, struct request *req)
+send_response(int peerfd, char *msg_buf, char *rtrv_buffer, uint16_t response_code, struct request *req)
 {
 	char		msg_body  [HTTP_BODY_LEN + 1];
 	uint8_t		error = 0;
 
-	_finalise_message_body(msg_body, req, rsp_str);
+    _finalise_message_body(msg_body, req, rtrv_buffer, response_code);
 
 	_start_message(msg_buf);
 

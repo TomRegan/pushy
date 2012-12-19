@@ -4,7 +4,7 @@
 #include "../../include/protocol_handler.h"
 
 /* private functions */
-void _finalise_message_body(char*, struct request*, char*);
+void _finalise_message_body(char*, struct request*, char*, uint16_t);
 int8_t _get_request_uri(char*, struct request*);
 unsigned char _get_request_method(char *);
 int8_t _get_protocol_version(char*, struct request*);
@@ -164,13 +164,27 @@ END_TEST
 START_TEST (test_generate_json_body)
 {
 	char msg_body[1024];
-	char* msg_content = "unit-test";
+    char* msg_content = "\"unit-test\"";
 	struct request req = {
 		.method = MGET,
 		.uri = "/"
 	};
-	_finalise_message_body(msg_body, &req, msg_content);
+    _finalise_message_body(msg_body, &req, msg_content, ROK);
 	fail_unless(0 == strcmp("{\"request\":\"/\",\"response\":\"unit-test\"}\r\n", msg_body));
+}
+END_TEST
+
+START_TEST(test_internal_error)
+{
+    char msg_body[1024];
+    char* msg_content = "unit-test";
+    struct request req = {
+        .method = MGET,
+        .uri = "/"
+    };
+    _finalise_message_body(msg_body, &req, msg_content, RINTERNAL);
+    puts(msg_body);
+    fail_unless(0 == strcmp("{\"request\":\"/\",\"response\":\"internal server error\"}\r\n", msg_body));
 }
 END_TEST
 

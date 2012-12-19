@@ -45,6 +45,14 @@
 #define MTRACE		0x40
 #define MUNKNOWN	0x80
 
+/* http responses */
+/* success */
+#define ROK         200
+/* client error */
+#define RNOTFOUND   404
+/* server error */
+#define RINTERNAL   500
+
 /* timestamp format */
 #define RFC1123_TIME "%a, %d %b %Y %H:%M:%S GMT"
 #define RFC1123_TIME_LEN 30
@@ -52,7 +60,10 @@
 /* error status messages */
 #define SNOTFOUND "not-found"
 #define SURITOOLONG "uri too long"
-#define SENDOFBUFFER "uri too long"
+#define SENDOFBUFFER "end of buffer"
+#define SINTERNAL "internal server error"
+#define SOK "OK"
+
 
 /* read errors */
 #define ECONNRST	-0x00
@@ -101,6 +112,6 @@ int read_request(int, struct request*);
  * @param r an http request struct
  * @return 0 on success, error status on error
  */
-uint8_t send_response(int, char*, char*, struct request*);
+uint8_t send_response(int, char*, char*rtrv_buffer, uint16_t response_code, struct request*);
 
 #endif /* REQUEST_H */

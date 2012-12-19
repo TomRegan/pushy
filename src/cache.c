@@ -15,6 +15,27 @@ _cksum(char *buf, size_t len)
 	return cksum % CACHE_KEYS;
 }
 
+uint8_t
+_tree_rtrv_recurse(struct record *r, char *key, char rtrv_buf [], size_t len)
+{
+    int cmp;
+
+    if (r == NULL) {
+        return -1;
+    }
+
+    cmp = strncmp(r->key, key, len);
+    if (cmp == 0) {
+        strncpy(rtrv_buf, r->value, len);
+        return 0;
+    } else if (cmp < 0) {
+        return _tree_rtrv_recurse(r->l, key, rtrv_buf, len);
+    } else {
+        return _tree_rtrv_recurse(r->r, key, rtrv_buf, len);
+    }
+    return -1;
+}
+
 void
 _tree_rm_resurse(struct record *r)
 {
@@ -37,7 +58,7 @@ _tree_rm_resurse(struct record *r)
 }
 
 struct record*
-_tree_rm(char * key, struct record *this, struct record **relink_ref)
+_tree_rm(char *key, struct record *this, struct record **relink_ref)
 {
 	int		cmp;
 	struct record	*tmp = this;
@@ -119,21 +140,24 @@ cache_init(void)
 		printf("error opening semphore: %i\n", errno);
 		return -1; /* error creating semaphor */
 	}
-	CACHE.size = 0;
-	cache_clear();
+
+    cache_clear();
+    CACHE.size = 0;
+
+
 	return 0; /* no error */
 }
 
 int8_t 
 cache_add(char* k, char* v)
 {
-	uint16_t	hash;
+    uint16_t    hash;
 
-	hash = _cksum(k, strlen(k));
+    hash = _cksum(k, strlen(k));
 
-	if (CACHE_LOCK == NULL) {
-		return -1; /* concurrency error */
-	}
+    if (CACHE_LOCK == NULL) {
+        return -1; /* concurrency error */
+    }
 
 	if (CACHE.keys [hash] != NULL) {
 		/*
@@ -168,13 +192,20 @@ cache_add(char* k, char* v)
 int8_t
 cache_rtrv(char *key, char rtrv_buf [], size_t len)
 {
-	if (CACHE_LOCK == NULL) {
-		return -1; /* concurrency error */
-	}
-	sem_wait(CACHE_LOCK);
-	strncpy(rtrv_buf, "{\"request\":\"/SYSTEM\",\"version\":\"0.0.1.1\"}\r\n", len);
-	sem_post(CACHE_LOCK);
-	return 0; /* no error */
+    uint16_t        cksum;
+    uint8_t         ret_val;
+
+    cksum = _cksum(key, strlen(key));
+
+    if (CACHE_LOCK == NULL) {
+        return -1; /* concurrency error */
+    }
+    sem_wait(CACHE_LOCK);
+
+    ret_val = _tree_rtrv_recurse(CACHE.keys [cksum], key, rtrv_buf, len);
+    sem_post(CACHE_LOCK);
+
+    return ret_val;
 }
 
 int8_t

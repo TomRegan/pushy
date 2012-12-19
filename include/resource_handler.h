@@ -15,6 +15,6 @@
  *
  * @returns  size_t  size of the rtrv buffer
  */
-size_t service_request(struct request*, char*, const size_t);
+uint16_t service_request(struct request*, char*, const size_t);
 
 #endif
