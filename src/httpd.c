@@ -20,25 +20,7 @@
  * @author  Tom Regan <code.tom.regan@gmail.com>
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <errno.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <arpa/inet.h>
-#include <signal.h>
-#include "../include/protocol_handler.h"
-#include "../include/buffers.h"
-#include "../include/logging.h"
-#include "../include/cache.h"
-#include "../include/resource_handler.h"
-
-#define PORT 55080
-#define BACKLOG 50
+#include "../include/httpd.h"
 
 #define handle_error(msg) do { perror(msg); fprintf(stderr, msg); exit(EXIT_FAILURE); } while (0)
 
@@ -60,7 +42,7 @@ _shutdown_hook(int ignored)
  * @return  int  file descriptor of a new socket
  */
 int
-init_server()
+init_server(void)
 {
 	int		sockfd;
 	struct sockaddr_in local_addr;
