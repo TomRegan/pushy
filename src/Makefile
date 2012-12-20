@@ -3,7 +3,6 @@ program_SRCS := $(wildcard *.c)
 program_OBJS := ${program_SRCS:.c=.o}
 
 LIBDIR := ../lib/
-OBJS := protocol_handler.o logging.o cache.o resource_handler.o
 TARGET := ../build
 UNAME := $(shell uname)
 
@@ -27,7 +26,9 @@ $(program_NAME): $(program_OBJS)
 
 deploy-libs:
 	test -d $(LIBDIR) || mkdir $(LIBDIR)
-	cp $(OBJS) $(LIBDIR)
+	cp $(program_OBJS) $(LIBDIR)
+	# this causes a duplicate symbol error during compile
+	$(RM) $(LIBDIR)/httpd.o
 
 clean:
 	$(RM) $(program_NAME) $(program_OBJS) \#*\# *~
