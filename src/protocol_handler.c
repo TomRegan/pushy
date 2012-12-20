@@ -30,9 +30,27 @@ _remaining_size(int max, char *buf)
 }
 
 int8_t
-_start_message(char *msg_buf)
+_start_message(char *msg_buf, uint16_t response_code)
 {
-    strncpy(msg_buf, "HTTP/1.1 404 Not Found\r\n", HTTP_RESPONSE_LEN);
+    char        *fmt_buf, *rsp_buf;
+
+    fmt_buf = "HTTP/1.1 %s\r\n";
+
+    switch (response_code) {
+    case ROK:
+        rsp_buf = "200 OK";
+        break;
+    case RNOTFOUND:
+        rsp_buf = "404 Not Found";
+        break;
+    case RNOTIMPLEMENTED:
+        rsp_buf = "501 Not Implemented";
+        break;
+    default:
+        rsp_buf = "500 Internal Server Error";
+    }
+
+    snprintf(msg_buf, HTTP_HEAD_LEN, fmt_buf, rsp_buf);
 
     return 0; /* no error */
 }
@@ -56,36 +74,42 @@ _insert_content_length(char *msg_buf, char *msg_body)
     return 0; /* no error */
 }
 
+void
+_write_error_status(char *rsp_str, char *status)
+{
+    size_t          offset;
+
+    offset = 3;
+    snprintf(rsp_str, strlen(status) + offset, "\"%s\"", status);
+}
+
 int8_t
 _finalise_message_body(char *msg_body, struct request *req, char *rtrv_buf, uint16_t response_code)
 {
     const char      *FMT_BUF;
     char            *rsp_str, tmp_rsp_str [HTTP_BODY_LEN + 1];
-    size_t          offset;
 
-    offset = 3;
     FMT_BUF = "{\"request\":\"%s\",\"response\":%s}\r\n";
 
     if (response_code == ROK) {
         rsp_str = rtrv_buf;
     } else {
         switch (response_code) {
-        case RINTERNAL:
-            snprintf(tmp_rsp_str, strlen(SINTERNAL) + offset, "\"%s\"", SINTERNAL);
-            break;
         case RNOTFOUND:
-            snprintf(tmp_rsp_str, strlen(SNOTFOUND) + offset, "\"%s\"", SNOTFOUND);
-
+            _write_error_status(tmp_rsp_str, SNOTFOUND);
+            break;
+        case RNOTIMPLEMENTED:
+            _write_error_status(tmp_rsp_str, SNOTIMPLEMENTED);
             break;
         default:
-            snprintf(tmp_rsp_str, strlen(SINTERNAL) + offset, "\"%s\"", SINTERNAL);
+            _write_error_status(tmp_rsp_str, SINTERNAL);
         }
         rsp_str = tmp_rsp_str;
     }
 
     snprintf(msg_body, HTTP_BODY_LEN, FMT_BUF, req->uri, rsp_str);
 
-	return 0; /* no error */
+    return 0; /* no error */
 }
 
 int8_t
@@ -125,7 +149,7 @@ send_response(int peerfd, char *msg_buf, char *rtrv_buffer, uint16_t response_co
 
     _finalise_message_body(msg_body, req, rtrv_buffer, response_code);
 
-	_start_message(msg_buf);
+    _start_message(msg_buf, response_code);
 
 	if (_insert_content_length(msg_buf, msg_body) == -1) {
 		error |= 0x1 << 7;

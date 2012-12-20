@@ -32,9 +32,11 @@ service_request(struct request *req, char *rtrv_buf, const size_t len)
             return ROK;
         } else {
             log_ln(DEBUG, "'%s' not found in cache\n", req->uri);
-            // send to error_not_found handler
             return RNOTFOUND;
         }
+    } else if (req->method == MUNKNOWN) {
+        log_ln(ERROR, "request method not implemented: 0x%x\n", req->method);
+        return RNOTIMPLEMENTED;
     }
 
     return RINTERNAL;

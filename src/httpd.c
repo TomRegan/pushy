@@ -28,9 +28,9 @@ void
 _shutdown_hook(int ignored)
 {
     /*
-     * serilize the cache
+     * serialize the cache
      */
-    puts("\rShutting down pushy...");
+    puts("\rShutting down pushy");
     exit(0);
 }
 

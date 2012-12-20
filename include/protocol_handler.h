@@ -48,11 +48,12 @@
 
 /* http responses */
 /* success */
-#define ROK         200
+#define ROK             200
 /* client error */
-#define RNOTFOUND   404
+#define RNOTFOUND       404
 /* server error */
-#define RINTERNAL   500
+#define RINTERNAL       500
+#define RNOTIMPLEMENTED 501
 
 /* timestamp format */
 #define RFC1123_TIME "%a, %d %b %Y %H:%M:%S GMT"
@@ -64,6 +65,7 @@
 #define SENDOFBUFFER "end of buffer"
 #define SINTERNAL "internal server error"
 #define SOK "OK"
+#define SNOTIMPLEMENTED "request method not implemented"
 
 
 /* read errors */

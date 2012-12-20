@@ -8,6 +8,7 @@ void _finalise_message_body(char*, struct request*, char*, uint16_t);
 int8_t _get_request_uri(char*, struct request*);
 unsigned char _get_request_method(char *);
 int8_t _get_protocol_version(char*, struct request*);
+int8_t _start_message(char*, uint16_t);
 
 START_TEST (test_request_url_is_parsed)
 {
@@ -176,8 +177,9 @@ END_TEST
 
 START_TEST(test_internal_error)
 {
-    char msg_body[1024];
-    char* msg_content = "unit-test";
+    char        msg_body[1024];
+    char        *msg_content = "unit-test";
+
     struct request req = {
         .method = MGET,
         .uri = "/"
@@ -185,6 +187,39 @@ START_TEST(test_internal_error)
     _finalise_message_body(msg_body, &req, msg_content, RINTERNAL);
     puts(msg_body);
     fail_unless(0 == strcmp("{\"request\":\"/\",\"response\":\"internal server error\"}\r\n", msg_body));
+}
+END_TEST
+
+START_TEST (test_request_for_nx_resource_returns_404_header)
+{
+    char        msg_buf [HTTP_BODY_LEN + 1];
+    char        *response = "HTTP/1.1 404 Not Found\r\n";
+
+    _start_message(msg_buf, RNOTFOUND);
+
+    fail_unless(0 == strncmp(msg_buf, response, strlen(response)));
+}
+END_TEST
+
+START_TEST (test_request_for_existing_resource_returns_200_header)
+{
+    char        msg_buf [HTTP_BODY_LEN + 1];
+    char        *response = "HTTP/1.1 200 OK\r\n";
+
+    _start_message(msg_buf, ROK);
+
+    fail_unless(0 == strncmp(msg_buf, response, strlen(response)));
+}
+END_TEST
+
+START_TEST (test_request_with_head_returns_501_header)
+{
+    char        msg_buf [HTTP_BODY_LEN + 1];
+    char        *response = "HTTP/1.1 501 Not Implemented\r\n";
+
+    _start_message(msg_buf, RNOTIMPLEMENTED);
+
+    fail_unless(0 == strncmp(msg_buf, response, strlen(response)));
 }
 END_TEST
 
@@ -206,6 +241,9 @@ request_suite(void)
 	tcase_add_test(tc_request, test_generate_json_body);
 	tcase_add_test(tc_request, test_protocol_version_is_parsed);
 	tcase_add_test(tc_request, test_protocol_version_returns_minus_one_on_error);
+    tcase_add_test(tc_request, test_request_for_nx_resource_returns_404_header);
+    tcase_add_test(tc_request, test_request_for_existing_resource_returns_200_header);
+    tcase_add_test(tc_request, test_request_with_head_returns_501_header);
 
 	suite_add_tcase(s, tc_request);
 
