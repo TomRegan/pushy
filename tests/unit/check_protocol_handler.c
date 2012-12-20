@@ -9,6 +9,7 @@ int8_t _get_request_uri(char*, struct request*);
 unsigned char _get_request_method(char *);
 int8_t _get_protocol_version(char*, struct request*);
 int8_t _start_message(char*, uint16_t);
+int8_t _get_content_length(char*, struct request*);
 
 START_TEST (test_request_url_is_parsed)
 {
@@ -92,12 +93,6 @@ END_TEST
 START_TEST (test_post_request_sets_correct_flag)
 {
   unsigned char method = 0;
-  /* we expect two things from this test: that the
-   * correct flag is set agian, but also that the
-   * previously set flag has been unset, ie. the
-   * result of evaluating the GET request is not
-   * persistant
-   */
   method = _get_request_method("POST / HTTP/1.1");
   fail_unless(method == MPOST);
 }
@@ -232,6 +227,20 @@ START_TEST (test_put_request_sets_correct_flag)
 }
 END_TEST
 
+START_TEST (test_content_length_is_returned)
+{
+    char            *request;
+    struct request  req;
+
+    bzero(&req, sizeof(struct request));
+    request = "Content-Length: 3\r\n";
+
+    (void) _get_content_length(request, &req);
+
+    fail_unless(3 == req.content_len);
+}
+END_TEST
+
 Suite *
 request_suite(void)
 {
@@ -254,6 +263,7 @@ request_suite(void)
     tcase_add_test(tc_request, test_request_for_existing_resource_returns_200_header);
     tcase_add_test(tc_request, test_request_with_head_returns_501_header);
     tcase_add_test(tc_request, test_put_request_sets_correct_flag);
+    tcase_add_test(tc_request, test_content_length_is_returned);
 
     suite_add_tcase(s, tc_request);
 

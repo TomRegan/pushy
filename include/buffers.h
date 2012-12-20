@@ -24,13 +24,13 @@
 #ifndef BUFFERS_H
 #define BUFFERS_H 1
 
-#define REQUEST_BUFFER_LEN	2047
-#define HTTP_RESPONSE_LEN	2047
-#define HTTP_BODY_LEN		1023
-#define HTTP_HEAD_LEN		1023
-#define REQUEST_BODY_LEN	1023
-#define REQUEST_HEAD_LEN	1023
-#define MAX_URI_LEN		1023
-#define LINE_BUF_LEN		511
+#define REQUEST_BUFFER_LEN  2047
+#define HTTP_RESPONSE_LEN   2047
+#define HTTP_BODY_LEN       1023
+#define HTTP_HEAD_LEN       1023
+#define REQUEST_BODY_LEN    1023
+#define REQUEST_HEAD_LEN    1023
+#define MAX_URI_LEN         1023
+#define LINE_BUF_LEN        511
 
 #endif /* BUFFERS_H */

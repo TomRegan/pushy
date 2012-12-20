@@ -220,7 +220,7 @@ _get_protocol_version(char *request, struct request *req)
     int             i = 0;
     char            *substr;
 
-    if ((substr = strnstr(request, "HTTP", HTTP_HEAD_LEN)) == NULL
+    if ((substr = strstr(request, "HTTP")) == NULL
             || strnlen(substr, HTTP_HEAD_LEN) < 10) {
         return -1; /* no http verison */
     }
@@ -232,14 +232,55 @@ _get_protocol_version(char *request, struct request *req)
 }
 
 int8_t
+_get_content_type(char *request, struct request *req)
+{
+    return 0;
+}
+
+int8_t
+_get_content_length(char *request, struct request *req)
+{
+    size_t          token_len, start, end;
+    char            *substr, *token, result [LINE_BUF_LEN + 1];
+
+    token = "Content-Length:";
+    token_len = 15;
+
+    /* !!!
+     * Don't replace this with strnstrn!
+     * strnstrn is not portable
+     */
+    substr = strstr(request, token);
+    substr += token_len;
+
+    start = 0;
+    for (end = 0; substr[end] != '\r'; ++end) {
+        if (substr [end] == ' ') {
+            ++start;
+        }
+    }
+    strncpy(result, substr + start, LINE_BUF_LEN);
+    result [end - start] = '\0';
+    req->content_len = atoi(result);
+
+    return 0;
+}
+
+int8_t
 _read_header(int peerfd, char * buf, struct request *req)
 {
-	req->method = _get_request_method(buf);
-	(void) _get_request_uri(buf, req);
-	(void) _get_protocol_version(buf, req);
-	/* TODO: if POST read content length */
+    int8_t         error;
 
-	return 0; /* no error */
+    error = 0; /* no error */
+
+    if ((req->method = _get_request_method(buf)) == MPOST) {
+        error += _get_content_length(buf, req);
+        error += _get_content_type(buf, req);
+    }
+    (void) _get_request_uri(buf, req);
+    (void) _get_protocol_version(buf, req);
+
+    return error;
 }
 
 int
@@ -250,6 +291,7 @@ read_request(int peerfd, struct request *req)
 
     nbytes = recv(peerfd, buf, REQUEST_HEAD_LEN, 0);
     buf[nbytes] = '\0';
+    log_ln(DEBUG, "%s\n", buf);
 
     if (nbytes) {
         /* TODO: return more granular errors from _read... */
