@@ -223,29 +223,39 @@ START_TEST (test_request_with_head_returns_501_header)
 }
 END_TEST
 
+START_TEST (test_put_request_sets_correct_flag)
+{
+    unsigned char method = 0;
+
+    method = _get_request_method("PUT / HTTP/1.1");
+    fail_unless(method == MPUT);
+}
+END_TEST
+
 Suite *
 request_suite(void)
 {
-	Suite *s = suite_create("protocol handler");
+    Suite *s = suite_create("protocol handler");
 
-	TCase *tc_request = tcase_create("protocol_handler");
+    TCase *tc_request = tcase_create("protocol_handler");
 
-	tcase_add_test(tc_request, test_request_url_is_parsed);
-	tcase_add_test(tc_request, test_method_and_uri_are_returned);
-	tcase_add_test(tc_request, test_get_request_sets_correct_flag);
-	tcase_add_test(tc_request, test_post_request_sets_correct_flag);
-	tcase_add_test(tc_request, test_unknown_request_sets_correct_flag);
-	tcase_add_test(tc_request, test_empty_request_sets_correct_flag);
-	tcase_add_test(tc_request, test_long_request_sets_correct_flag);
-	tcase_add_test(tc_request, test_non_ascii_sets_correct_flag);
-	tcase_add_test(tc_request, test_generate_json_body);
-	tcase_add_test(tc_request, test_protocol_version_is_parsed);
-	tcase_add_test(tc_request, test_protocol_version_returns_minus_one_on_error);
+    tcase_add_test(tc_request, test_request_url_is_parsed);
+    tcase_add_test(tc_request, test_method_and_uri_are_returned);
+    tcase_add_test(tc_request, test_get_request_sets_correct_flag);
+    tcase_add_test(tc_request, test_post_request_sets_correct_flag);
+    tcase_add_test(tc_request, test_unknown_request_sets_correct_flag);
+    tcase_add_test(tc_request, test_empty_request_sets_correct_flag);
+    tcase_add_test(tc_request, test_long_request_sets_correct_flag);
+    tcase_add_test(tc_request, test_non_ascii_sets_correct_flag);
+    tcase_add_test(tc_request, test_generate_json_body);
+    tcase_add_test(tc_request, test_protocol_version_is_parsed);
+    tcase_add_test(tc_request, test_protocol_version_returns_minus_one_on_error);
     tcase_add_test(tc_request, test_request_for_nx_resource_returns_404_header);
     tcase_add_test(tc_request, test_request_for_existing_resource_returns_200_header);
     tcase_add_test(tc_request, test_request_with_head_returns_501_header);
+    tcase_add_test(tc_request, test_put_request_sets_correct_flag);
 
-	suite_add_tcase(s, tc_request);
+    suite_add_tcase(s, tc_request);
 
-	return s;
+    return s;
 }

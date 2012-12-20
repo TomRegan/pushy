@@ -175,13 +175,21 @@ send_response(int peerfd, char *msg_buf, char *rtrv_buffer, uint16_t response_co
 uint8_t
 _get_request_method(char *request_line)
 {
-	if (strncmp(request_line, "GET", 3) == 0) {
-		return MGET;
-	}
-	if (strncmp(request_line, "POST", 4) == 0) {
-		return MPOST;
-	}
-	return MUNKNOWN;
+    uint8_t         method;
+
+    method = MUNKNOWN;
+
+    if (strncmp(request_line, "GET", 3) == 0) {
+        method = MGET;
+    }
+    if (strncmp(request_line, "POST", 4) == 0) {
+        method = MPOST;
+    }
+    if (strncmp(request_line, "PUT", 3) == 0) {
+        method = MPUT;
+    }
+
+    return method;
 }
 
 int8_t
@@ -209,18 +217,18 @@ _get_request_uri(char *request_line, struct request *req)
 int8_t
 _get_protocol_version(char *request, struct request *req)
 {
-	int		i = 0;
-	char		*substr;
+    int             i = 0;
+    char            *substr;
 
-	if ((substr = strstr(request, "HTTP")) == NULL
-		|| strlen(substr) < 10) {
-		return -1; /* no http verison */
-	}
+    if ((substr = strnstr(request, "HTTP", HTTP_HEAD_LEN)) == NULL
+            || strnlen(substr, HTTP_HEAD_LEN) < 10) {
+        return -1; /* no http verison */
+    }
 
-	req->http_version.major = atoi(&substr [5]);
-	req->http_version.minor = atoi(&substr [7]);
+    req->http_version.major = atoi(&substr [5]);
+    req->http_version.minor = atoi(&substr [7]);
 
-	return 0; /* no error */
+    return 0; /* no error */
 }
 
 int8_t
