@@ -48,6 +48,21 @@ START_TEST (test_service_request_returns_not_found)
 }
 END_TEST
 
+START_TEST (test_service_request_returns_not_implemented)
+{
+    struct request  req;
+    char            rtrv_buf [HTTP_BODY_LEN +1];
+    char            *uri = "/";
+
+    cache_init();
+
+    req.method = MPOST;
+    strncpy(req.uri, uri, strlen(uri));
+
+    fail_unless(RNOTIMPLEMENTED == service_request(&req, rtrv_buf, HTTP_BODY_LEN));
+}
+END_TEST
+
 Suite *
 resource_suite(void)
 {
@@ -58,6 +73,7 @@ resource_suite(void)
     tcase_add_test(tc_resource, test_service_reqeust_returns_internal_error);
     tcase_add_test(tc_resource, test_service_request_returns_ok);
     tcase_add_test(tc_resource, test_service_request_returns_not_found);
+    tcase_add_test(tc_resource, test_service_request_returns_not_implemented);
 
     suite_add_tcase(s, tc_resource);
 

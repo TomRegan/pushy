@@ -259,6 +259,11 @@ _get_content_length(char *request, struct request *req)
             ++start;
         }
     }
+    /* FIXME
+     * copies too much data. should only copy the header field/value
+     * e.g. strncpy(result, substr + start, end - substr);
+     * needs UT.
+     */
     strncpy(result, substr + start, LINE_BUF_LEN);
     result [end - start] = '\0';
     req->content_len = atoi(result);

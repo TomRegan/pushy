@@ -94,8 +94,8 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
         response_code = service_request(&req, rtrv_buffer, HTTP_BODY_LEN);
         send_response(peerfd, msg_buffer, rtrv_buffer, response_code, &req);
         if (nbytes) {
-        log_ln(FINER, "read %i bytes\n", nbytes);
-        log_conn(FINE, peer_addr, "<<< %s\n", msg_buffer);
+            log_ln(FINER, "read %i bytes\n", nbytes);
+            log_conn(FINE, peer_addr, "<<< %s\n", msg_buffer);
         }
     }
 

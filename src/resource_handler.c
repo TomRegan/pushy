@@ -27,16 +27,18 @@ uint16_t
 service_request(struct request *req, char *rtrv_buf, const size_t len)
 {
 
-    if (req->method == MGET) {
-        if (cache_rtrv(req->uri, rtrv_buf, len) == 0) {
-            return ROK;
-        } else {
-            log_ln(DEBUG, "'%s' not found in cache\n", req->uri);
-            return RNOTFOUND;
+    if (req != NULL) {
+        if (req->method == MGET) {
+            if (cache_rtrv(req->uri, rtrv_buf, len) == 0) {
+                return ROK;
+            } else {
+                log_ln(DEBUG, "'%s' not found in cache\n", req->uri);
+                return RNOTFOUND;
+            }
+        } else if (req->method == MUNKNOWN || req->method == MPOST) {
+            log_ln(ERROR, "request method not implemented: 0x%x\n", req->method);
+            return RNOTIMPLEMENTED;
         }
-    } else if (req->method == MUNKNOWN) {
-        log_ln(ERROR, "request method not implemented: 0x%x\n", req->method);
-        return RNOTIMPLEMENTED;
     }
 
     return RINTERNAL;
