@@ -38,7 +38,7 @@
 #define DEBUG		0x20
 #define MEM_DEBUG	0x40
 
-#define LEVEL DEBUG /* logging level */
+#define LEVEL MEM_DEBUG /* logging level */
 
 #define LOG_BUFFER_LEN 255
 

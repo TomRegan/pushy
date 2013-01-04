@@ -173,7 +173,7 @@ END_TEST
 START_TEST(test_internal_error)
 {
     char        msg_body[1024];
-    char        *msg_content = "unit-test";
+    char        *msg_content = "internal server error";
 
     struct request req = {
         .method = MGET,
@@ -264,6 +264,7 @@ request_suite(void)
     tcase_add_test(tc_request, test_request_with_head_returns_501_header);
     tcase_add_test(tc_request, test_put_request_sets_correct_flag);
     tcase_add_test(tc_request, test_content_length_is_returned);
+    tcase_add_test(tc_request, test_internal_error);
 
     suite_add_tcase(s, tc_request);
 

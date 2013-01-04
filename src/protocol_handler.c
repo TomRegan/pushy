@@ -79,6 +79,18 @@ _write_error_status(char *rsp_str, char *status)
 {
     size_t          offset;
 
+    /* Rational for offset:
+     *
+     * from snprintf man page:
+     *
+     * "The snprintf() and vsnprintf() functions will write at most n-1 of the
+     * characters printed into the output string (the n'th character then gets
+     * the terminating `\0');"
+     *
+     * So:
+     *   2 chars for the quotes in format
+     *   1 char for '\0'
+     */
     offset = 3;
     snprintf(rsp_str, strlen(status) + offset, "\"%s\"", status);
 }

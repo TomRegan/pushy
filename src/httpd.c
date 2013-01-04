@@ -93,7 +93,7 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
         return;
     }
     bzero(req, sizeof (struct request));
-    log_ln(DEBUG, "allocated %zuB for request\n", sizeof (struct request));
+    log_ln(MEM_DEBUG, "allocated %zuB for request\n", sizeof (struct request));
 
     while ((nbytes = read_request(peerfd, req)) > 0) {
         log_conn(FINE, peer_addr, ">>> %s\n", req->uri);
@@ -114,6 +114,7 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 	}
 
     free(req);
+    log_ln(MEM_DEBUG, "freed request");
 
 	return;
 }
