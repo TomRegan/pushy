@@ -30,7 +30,7 @@
 #define HTTP_HEAD_LEN       1023
 #define REQUEST_BODY_LEN    1023
 #define REQUEST_HEAD_LEN    1023
-#define MAX_URI_LEN         1023
+#define MAX_URI_LEN         238
 #define LINE_BUF_LEN        511
 
 #endif /* BUFFERS_H */
