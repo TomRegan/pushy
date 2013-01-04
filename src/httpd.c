@@ -92,6 +92,7 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
     if ((req = malloc(sizeof (struct request))) == NULL) {
         return;
     }
+    bzero(req, sizeof (struct request));
     log_ln(DEBUG, "allocated %zuB for request\n", sizeof (struct request));
 
     while ((nbytes = read_request(peerfd, req)) > 0) {
@@ -111,6 +112,8 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 	} else if (nbytes == ESOCKERR) {
 		log_ln(ERROR, "reading from socket: 0x%02x\n", (int) abs(nbytes));
 	}
+
+    free(req);
 
 	return;
 }

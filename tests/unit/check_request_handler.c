@@ -13,6 +13,8 @@ START_TEST (test_service_reqeust_returns_internal_error)
     struct request  req;
     char            rtrv_buf [HTTP_BODY_LEN + 1];
 
+    bzero (&req, sizeof (struct request));
+
     fail_unless(RINTERNAL == service_request(&req, rtrv_buf, HTTP_BODY_LEN));
 }
 END_TEST
@@ -23,6 +25,7 @@ START_TEST (test_service_request_returns_ok)
     char            rtrb_buf [HTTP_BODY_LEN + 1];
 
     cache_init();
+    bzero (&req, sizeof (struct request));
     cache_add("/SYSTEM", "{\"request\":\"/SYSTEM\",\"version\":\"0.0.1.1\"}");
 
     req.method = MGET;
@@ -40,6 +43,7 @@ START_TEST (test_service_request_returns_not_found)
     char            *uri = "not/in/cache";
 
     cache_init();
+    bzero(&req, sizeof (struct request));
 
     req.method = MGET;
     strncpy(req.uri, uri, strlen(uri));
@@ -55,6 +59,7 @@ START_TEST (test_service_request_returns_not_implemented)
     char            *uri = "/";
 
     cache_init();
+    bzero(&req, sizeof (struct request));
 
     req.method = MPOST;
     strncpy(req.uri, uri, strlen(uri));
