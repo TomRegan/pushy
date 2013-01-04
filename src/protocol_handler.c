@@ -296,7 +296,6 @@ read_request(int peerfd, struct request *req)
 
     nbytes = recv(peerfd, buf, REQUEST_HEAD_LEN, 0);
     buf[nbytes] = '\0';
-    log_ln(DEBUG, "%s\n", buf);
 
     if (nbytes) {
         /* TODO: return more granular errors from _read... */

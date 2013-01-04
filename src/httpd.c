@@ -85,14 +85,19 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
     char            msg_buffer [HTTP_RESPONSE_LEN + 1];
     char            rtrv_buffer [HTTP_BODY_LEN + 1];
-    struct request  req;
+    struct request  *req = NULL;
     int             nbytes = 0;
     uint16_t        response_code;
 
-    while ((nbytes = read_request(peerfd, &req)) > 0) {
-        log_conn(FINE, peer_addr, ">>> %s\n", req.uri);
-        response_code = service_request(&req, rtrv_buffer, HTTP_BODY_LEN);
-        send_response(peerfd, msg_buffer, rtrv_buffer, response_code, &req);
+    if ((req = malloc(sizeof (struct request))) == NULL) {
+        return;
+    }
+    log_ln(DEBUG, "allocated %zuB for request\n", sizeof (struct request));
+
+    while ((nbytes = read_request(peerfd, req)) > 0) {
+        log_conn(FINE, peer_addr, ">>> %s\n", req->uri);
+        response_code = service_request(req, rtrv_buffer, HTTP_BODY_LEN);
+        send_response(peerfd, msg_buffer, rtrv_buffer, response_code, req);
         if (nbytes) {
             log_ln(FINER, "read %i bytes\n", nbytes);
             log_conn(FINE, peer_addr, "<<< %s\n", msg_buffer);
