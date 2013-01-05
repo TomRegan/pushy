@@ -303,27 +303,39 @@ _read_header(int peerfd, char * buf, struct request *req)
 int
 read_request(int peerfd, struct request *req)
 {
-    int         nbytes;
-    char        buf [REQUEST_BUFFER_LEN + 1];
+    int         nbytes, error;
+    char        *buf = NULL;
+    size_t      buf_len;
+
+    buf_len = REQUEST_BUFFER_LEN + REQUEST_BODY_LEN + 1;
+    if ((buf = malloc(buf_len)) == NULL) {
+        return -1;
+    }
+    log_ln(MEM_DEBUG, "allocated %zuB for message buffer\n", buf_len);
 
     nbytes = recv(peerfd, buf, REQUEST_HEAD_LEN, 0);
     buf[nbytes] = '\0';
 
     if (nbytes) {
         /* TODO: return more granular errors from _read... */
-        if ((_read_header(peerfd, buf, req)) == -1) {
-            return EREADHEAD;
+        if ((_read_header(peerfd, buf, req)) != -1) {
+            error = nbytes; /* no error */
+        } else {
+            error = EREADHEAD; /* error reading header */
         }
         /* TODO: if POST and content length > 0 read body */
     } else {
         if (nbytes == 0) {
-            return ECONNRST; /* connection reset */
+            error = ECONNRST; /* connection reset */
         } else if (nbytes == -1) {
-            return ESOCKERR; /* read error */
+            error = ESOCKERR; /* read error */
         } else {
-            return EUNKNOWN;
+            error = EUNKNOWN;
         }
     }
 
-    return nbytes; /* no error */
+    free(buf);
+    log_ln(MEM_DEBUG, "freed message buffer\n");
+
+    return error;
 }

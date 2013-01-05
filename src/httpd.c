@@ -97,10 +97,10 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 
     while ((nbytes = read_request(peerfd, req)) > 0) {
         log_conn(FINE, peer_addr, ">>> %s\n", req->uri);
+        log_ln(FINER, "read %i bytes\n", nbytes);
         response_code = service_request(req, rtrv_buffer, HTTP_BODY_LEN);
         send_response(peerfd, msg_buffer, rtrv_buffer, response_code, req);
         if (nbytes) {
-            log_ln(FINER, "read %i bytes\n", nbytes);
             log_conn(FINE, peer_addr, "<<< %s\n", msg_buffer);
         }
     }
@@ -114,7 +114,7 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 	}
 
     free(req);
-    log_ln(MEM_DEBUG, "freed request");
+    log_ln(MEM_DEBUG, "freed request\n");
 
 	return;
 }
