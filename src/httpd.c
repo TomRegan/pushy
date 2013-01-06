@@ -113,6 +113,10 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 		log_ln(ERROR, "reading from socket: 0x%02x\n", (int) abs(nbytes));
 	}
 
+    if (req->body != NULL) {
+        free(req->body);
+        log_ln(MEM_DEBUG, "freed data buffer\n");
+    }
     free(req);
     log_ln(MEM_DEBUG, "freed request\n");
 

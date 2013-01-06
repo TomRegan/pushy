@@ -52,7 +52,7 @@ START_TEST (test_service_request_returns_not_found)
 }
 END_TEST
 
-START_TEST (test_service_request_returns_not_implemented)
+START_TEST (test_service_request_returns_ok_on_post)
 {
     struct request  req;
     char            rtrv_buf [HTTP_BODY_LEN +1];
@@ -62,9 +62,11 @@ START_TEST (test_service_request_returns_not_implemented)
     bzero(&req, sizeof (struct request));
 
     req.method = MPOST;
+    req.body = malloc(sizeof (struct body));
+    strcpy(req.body->buf, "hello world");
     strncpy(req.uri, uri, strlen(uri));
 
-    fail_unless(RNOTIMPLEMENTED == service_request(&req, rtrv_buf, HTTP_BODY_LEN));
+    fail_unless(ROK == service_request(&req, rtrv_buf, HTTP_BODY_LEN));
 }
 END_TEST
 
@@ -78,7 +80,7 @@ resource_suite(void)
     tcase_add_test(tc_resource, test_service_reqeust_returns_internal_error);
     tcase_add_test(tc_resource, test_service_request_returns_ok);
     tcase_add_test(tc_resource, test_service_request_returns_not_found);
-    tcase_add_test(tc_resource, test_service_request_returns_not_implemented);
+    tcase_add_test(tc_resource, test_service_request_returns_ok_on_post);
 
     suite_add_tcase(s, tc_resource);
 

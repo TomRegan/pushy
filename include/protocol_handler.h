@@ -69,10 +69,12 @@
 
 
 /* read errors */
-#define ECONNRST	-0x00
-#define EREADHEAD	-0x01
-#define ESOCKERR	-0x02
-#define EUNKNOWN	-0x04
+#define ECONNRST    -0x00
+#define EREADHEAD   -0x01
+#define ERRORBODY   -0x02
+#define ESOCKERR    -0x04
+#define EUNKNOWN    -0x08
+#define EMEMALOC    -0x10
 
 
 struct

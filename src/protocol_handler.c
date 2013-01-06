@@ -246,7 +246,7 @@ _get_protocol_version(char *request, struct request *req)
 int8_t
 _get_content_type(char *request, struct request *req)
 {
-    return 0;
+    return 0; /* no error */
 }
 
 int8_t
@@ -284,7 +284,7 @@ _get_content_length(char *request, struct request *req)
 }
 
 int8_t
-_read_header(int peerfd, char * buf, struct request *req)
+_read_header(char * buf, struct request *req)
 {
     int8_t         error;
 
@@ -300,6 +300,44 @@ _read_header(int peerfd, char * buf, struct request *req)
     return error;
 }
 
+char*
+_trim_both(char *data)
+{
+    size_t      start;
+    char        *end;
+
+    if (data [0] != '\0') {
+        for (start = 0; data [start] <= ' '; data++);
+        for (end = &data [strlen(data)]; *end <= ' '; *end-- = '\0');
+    }
+
+    return data;
+}
+
+int8_t
+_read_body(char *buf, struct request *req)
+{
+    int8_t          error;
+    char            *body;
+    size_t          body_size;
+
+    body_size = sizeof (struct body);
+    if ((req->body = malloc (body_size)) == NULL) {
+        return EMEMALOC;
+    }
+    log_ln(MEM_DEBUG, "allocated %zuB for data buffer\n", body_size);
+
+    error = 0; /* no error */
+
+    body = strstr(buf, "\r\n\r\n");
+    body = _trim_both(body);
+
+    if (strlen(body) < REQUEST_BODY_LEN) {
+        strncpy(req->body->buf, body, strlen(body));
+    }
+    return error;
+}
+
 int
 read_request(int peerfd, struct request *req)
 {
@@ -307,23 +345,27 @@ read_request(int peerfd, struct request *req)
     char        *buf = NULL;
     size_t      buf_len;
 
-    buf_len = REQUEST_BUFFER_LEN + REQUEST_BODY_LEN + 1;
+    buf_len = REQUEST_BUFFER_LEN + 1;
     if ((buf = malloc(buf_len)) == NULL) {
-        return -1;
+        return EMEMALOC; /* memory allocation error */
     }
-    log_ln(MEM_DEBUG, "allocated %zuB for message buffer\n", buf_len);
+    log_ln(MEM_DEBUG, "allocated %zuB for recv buffer\n", buf_len);
 
-    nbytes = recv(peerfd, buf, REQUEST_HEAD_LEN, 0);
+    error = nbytes = recv(peerfd, buf, REQUEST_HEAD_LEN, 0);
     buf[nbytes] = '\0';
 
     if (nbytes) {
-        /* TODO: return more granular errors from _read... */
-        if ((_read_header(peerfd, buf, req)) != -1) {
-            error = nbytes; /* no error */
-        } else {
-            error = EREADHEAD; /* error reading header */
+        if ((_read_header(buf, req)) != 0) {
+            error |= EREADHEAD; /* error reading header */
         }
-        /* TODO: if POST and content length > 0 read body */
+        if (req->method == MPOST && req->content_len) {
+            if ((_read_body(buf, req)) != 0) {
+                error |= ERRORBODY; /* error reading body */
+            } else {
+                log_ln(DEBUG, "got data \"%s\"\n", req->body->buf);
+            }
+
+        }
     } else {
         if (nbytes == 0) {
             error = ECONNRST; /* connection reset */
@@ -335,7 +377,7 @@ read_request(int peerfd, struct request *req)
     }
 
     free(buf);
-    log_ln(MEM_DEBUG, "freed message buffer\n");
+    log_ln(MEM_DEBUG, "freed recv buffer\n");
 
     return error;
 }

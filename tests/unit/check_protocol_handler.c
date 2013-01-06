@@ -10,6 +10,8 @@ unsigned char _get_request_method(char *);
 int8_t _get_protocol_version(char*, struct request*);
 int8_t _start_message(char*, uint16_t);
 int8_t _get_content_length(char*, struct request*);
+int8_t _read_body(char*, struct request*);
+char* _trim_both(char*);
 
 START_TEST (test_request_url_is_parsed)
 {
@@ -241,6 +243,43 @@ START_TEST (test_content_length_is_returned)
 }
 END_TEST
 
+START_TEST (test_read_body_stores_data)
+{
+    char            request [80] = "\r\n\r\ndata\r\n";
+    char            request2 [80] = "some\r\n\r\nmore data \r\n";
+    struct request  req;
+
+    bzero (&req, sizeof (struct request));
+    _read_body(request, &req);
+
+    fail_unless(0 == strcmp("data", req.body->buf));
+
+    bzero(&req, sizeof (struct request));
+    _read_body(request2, &req);
+
+    fail_unless(0 == strcmp("more data", req.body->buf));
+}
+END_TEST
+
+START_TEST (test_trim_surround_data_removes_control_chars)
+{
+    char            *expected_result;
+    char            data [80] = "\r\nstuff\r\n";
+
+    expected_result = "stuff";
+    fail_unless(0 == strncmp(expected_result, _trim_both(data), strlen(expected_result)));
+}
+END_TEST
+
+START_TEST (test_trim_surround_data_handles_null_string)
+{
+    char            data [80] = "\0", *expected_result;
+
+    expected_result = "";
+    fail_unless(0 == strncmp(expected_result, _trim_both(data), strlen(expected_result)));
+}
+END_TEST
+
 Suite *
 request_suite(void)
 {
@@ -265,6 +304,9 @@ request_suite(void)
     tcase_add_test(tc_request, test_put_request_sets_correct_flag);
     tcase_add_test(tc_request, test_content_length_is_returned);
     tcase_add_test(tc_request, test_internal_error);
+    tcase_add_test(tc_request, test_read_body_stores_data);
+    tcase_add_test(tc_request, test_trim_surround_data_removes_control_chars);
+    tcase_add_test(tc_request, test_trim_surround_data_handles_null_string);
 
     suite_add_tcase(s, tc_request);
 
