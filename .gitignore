@@ -15,8 +15,11 @@ lib/
 *~
 .*
 !.gdbinit
+!.travis.yml
 *.BAK
 \#*\#
+
+# Vagrant
 Vagrantfile
 
 # Qt Creator Config files
