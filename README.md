@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/TomRegan/pushy.png?branch=master)](https://travis-ci.org/TomRegan/pushy)
 # pushy
 an http push server (one day)
 

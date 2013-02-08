@@ -19,9 +19,6 @@ lib/
 *.BAK
 \#*\#
 
-# Vagrant
-Vagrantfile
-
 # Qt Creator Config files
 *.config
 *.creator
