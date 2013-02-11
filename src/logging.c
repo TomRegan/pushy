@@ -23,6 +23,37 @@
 
 #include "../include/logging.h"
 
+LOG_LEVEL LEVEL;
+
+void
+log_init(void)
+{
+    char *user_level = getenv("PUSHY_LOG_LEVEL");
+    if (user_level == NULL) {
+        user_level = "INFO";
+    }
+
+    if (strncmp("NONE", user_level, 4) == 0) {
+        LEVEL = NONE;
+    } else if(strncmp("ERROR", user_level, 5) == 0) {
+        LEVEL = ERROR;
+    } else if(strncmp("INFO", user_level, 5) == 0) {
+        LEVEL = INFO;
+    } else if(strncmp("FINE", user_level, 5) == 0) {
+        LEVEL = FINE;
+    } else if(strncmp("FINER", user_level, 5) == 0) {
+        LEVEL = FINER;
+    } else if(strncmp("FINEST", user_level, 5) == 0) {
+        LEVEL = FINEST;
+    } else if(strncmp("DEBUG", user_level, 5) == 0) {
+        LEVEL = DEBUG;
+    } else if(strncmp("MEM_DEBUG", user_level, 5) == 0) {
+        LEVEL = MEM_DEBUG;
+    }
+    log_ln(INFO, "Logging level is set to %s\n", user_level);
+}
+
+
 char*
 _label(LOG_LEVEL level)
 {

@@ -47,6 +47,7 @@ init_server(void)
 	int		sockfd;
 	struct sockaddr_in local_addr;
 
+    log_init();
 	cache_init();
 
     cache_add("/SYSTEM", "{\"version\":\"0.0.1.1\"}");
@@ -139,7 +140,7 @@ serve_forever(int sockfd)
 	socklen_t	sin_size = sizeof(struct sockaddr_in);
 	struct sockaddr_in peer_addr;
 
-	printf("accepting connections on %i\n", PORT);
+    log_ln(INFO, "accepting connections on %i\n", PORT);
 
 	while (1) {
 
@@ -177,7 +178,7 @@ httpd(int argc, char *argv[])
 {
     int		sockfd;
 
-    printf("Pushy/0.0.1.1 starting\n");
+    puts("Pushy/0.0.1.1 starting");
 
     signal(SIGINT, _shutdown_hook);
 

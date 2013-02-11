@@ -25,6 +25,7 @@
 #define LOGGING_H 1
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <arpa/inet.h>
@@ -40,10 +41,9 @@ typedef enum {
     MEM_DEBUG
 } LOG_LEVEL;
 
-#define LEVEL DEBUG /* logging level */
-
 #define LOG_BUFFER_LEN 255
 
+void log_init(void);
 void log_ln(LOG_LEVEL, char*, ...);
 void log_conn(LOG_LEVEL, struct sockaddr_in*, char*, ...);
 
