@@ -22,6 +22,6 @@ lib/
 # Qt Creator Config files
 *.config
 *.creator
-*.creator.user
+*.creator.user*
 *.files
 *.includes
