@@ -24,7 +24,7 @@
 #include "../include/logging.h"
 
 char*
-_label(level)
+_label(LOG_LEVEL level)
 {
 	char		*label;
 
@@ -57,7 +57,7 @@ _label(level)
 }
 
 void
-log_ln(int level, char *fmt, ...)
+log_ln(LOG_LEVEL level, char *fmt, ...)
 {
 	char		log_buf [LOG_BUFFER_LEN + 1];
 	va_list		ap;
@@ -74,7 +74,7 @@ log_ln(int level, char *fmt, ...)
 }
 
 void
-log_conn(int level, struct sockaddr_in *sockaddr, char *fmt, ...)
+log_conn(LOG_LEVEL level, struct sockaddr_in *sockaddr, char *fmt, ...)
 {
 	char		log_buf [LOG_BUFFER_LEN + 1], tmp_buf[LOG_BUFFER_LEN + 1];
 	va_list		ap;

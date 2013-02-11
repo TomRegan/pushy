@@ -12,7 +12,7 @@ TARGET := ../../build/unit-test
 
 program_OBJS := $(wildcard ../../lib/*.o)
 
-CFLAGS += -L/opt/local/lib -I/opt/local/include -I../../include #-Qunused-arguments
+CFLAGS += -I../../include
 
 .PHONY: all clean copy-to-test
 
