@@ -116,11 +116,8 @@ _tree_rm(char *key, struct record *this, struct record **relink_ref)
 			this->l = NULL;
 		}
 
-		/* terminal node, delete */
-		if (this->l == NULL && this->r == NULL) {
-			log_ln(MEM_DEBUG, "freeing %s:%s %p\n", this->key, this->value, this);
-			free(this);
-		}
+        log_ln(MEM_DEBUG, "freeing %s:%s %p\n", this->key, this->value, this);
+        free(this);
 
 	} else if (relink_ref == NULL && 0 > cmp) { /* node is in left subtree */
 		if (this->l != NULL && 0 == strncmp(key, this->l->key, RECORD_KEY_LEN)) {
