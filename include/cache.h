@@ -35,9 +35,9 @@
 
 #include "logging.h"
 
-#define CACHE_KEYS		997
-#define RECORD_KEY_LEN		255
-#define RECORD_ENTRY_LEN	1023
+#define CACHE_KEYS          997
+#define RECORD_KEY_LEN      255
+#define RECORD_ENTRY_LEN    1023
 
 struct record {
     char            key [RECORD_KEY_LEN + 1];

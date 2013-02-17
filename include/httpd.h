@@ -42,7 +42,7 @@
 #include "cache.h"
 #include "resource_handler.h"
 
-#define PORT 55080
-#define BACKLOG 50
+const uint16_t PORT = 55080;
+const uint16_t BACKLOG = 50;
 
 #endif
