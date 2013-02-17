@@ -116,26 +116,25 @@ _tree_rm(char *key, struct record *this, struct record **relink_ref)
 			this->l = NULL;
 		}
 
-		/* terminal node, delete */
-		if (this->l == NULL && this->r == NULL) {
-			log_ln(MEM_DEBUG, "freeing %s:%s %p\n", this->key, this->value, this);
-			free(this);
-		}
+        log_ln(MEM_DEBUG, "freeing %s:%s %p\n", this->key, this->value, this);
+        free(this);
 
-	} else if (relink_ref == NULL && 0 > cmp) { /* node is in left subtree */
-		if (this->l != NULL && 0 == strncmp(key, this->l->key, RECORD_KEY_LEN)) {
-			/* the left node is for deletion */
-			this->l = _tree_rm(key, this->l, NULL);
-		} else {
-			(void) _tree_rm(key, this->l, NULL);
-		}
-	} else if (relink_ref == NULL && 0 < cmp) { /* node is in right subtree */
-		if (this->r != NULL && 0 == strncmp(key, this->r->key, RECORD_KEY_LEN)) {
-			/* the right node is for deletion */
-			this->r = _tree_rm(key, this->r, NULL);
-		} else {
-			(void) _tree_rm(key, this->r, NULL);
-		}
+	} else if (relink_ref == NULL) {
+        if (0 > cmp) { /* node is in left subtree */
+            if (this->l != NULL && 0 == strncmp(key, this->l->key, RECORD_KEY_LEN)) {
+                /* the left node is for deletion */
+                this->l = _tree_rm(key, this->l, NULL);
+            } else {
+                (void) _tree_rm(key, this->l, NULL);
+            }
+        } else { /* node is in right subtree */
+            if (this->r != NULL && 0 == strncmp(key, this->r->key, RECORD_KEY_LEN)) {
+                /* the right node is for deletion */
+                this->r = _tree_rm(key, this->r, NULL);
+            } else {
+                (void) _tree_rm(key, this->r, NULL);
+            }
+        }
 	}
 
 	/* relink the node */
