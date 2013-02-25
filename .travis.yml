@@ -1,6 +1,6 @@
 language: c
 before_install:
-  - sudo apt-get install check
-script: make clean check
+  - sudo apt-get install scons
+script: scons test
 notifications:
   email: false
