@@ -182,7 +182,6 @@ START_TEST(test_internal_error)
         .uri = "/"
     };
     _finalise_message_body(msg_body, &req, msg_content, RINTERNAL);
-    puts(msg_body);
     fail_unless(0 == strcmp("{\"request\":\"/\",\"response\":\"internal server error\"}\r\n", msg_body));
 }
 END_TEST

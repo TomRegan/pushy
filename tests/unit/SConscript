@@ -1,0 +1,3 @@
+program = Program('check', Glob('*.c'), LIBS=['check', 'unittest'], LIBPATH='..')
+check = Alias('test', [program], program[0].abspath)
+AlwaysBuild(check)

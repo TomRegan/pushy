@@ -1,1 +1,2 @@
 Program('httpd', Glob('*.c'))
+Library('unittest', Glob('*.c'))
