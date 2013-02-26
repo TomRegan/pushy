@@ -1,3 +1,7 @@
-program = Program('check', Glob('*.c'), LIBS=['check', 'unittest'], LIBPATH='..')
+env = Environment(LINKFLAGS='-pthread')
+env.VariantDir('../../build/unit-test/', 'tests/unit', duplicate=0)
+program = env.Program(
+    'check', Glob('*.c'), LIBS=['check', 'pushy'], LIBPATH='../../build/lib'
+)
 check = Alias('test', [program], program[0].abspath)
 AlwaysBuild(check)
