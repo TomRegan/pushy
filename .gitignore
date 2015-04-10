@@ -9,6 +9,7 @@ test_runner
 httpd
 build/
 lib/
+include/version.h
 
 # Temp files and logs
 *.log

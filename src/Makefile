@@ -5,6 +5,7 @@ program_OBJS := ${program_SRCS:.c=.o}
 LIBDIR := ../lib
 TARGET := ../build
 UNAME := $(shell uname)
+BUILDS := $(shell git rev-list HEAD --count)
 
 ifeq ($(UNAME),Linux)
 	CFLAGS += -pthread
@@ -20,7 +21,7 @@ endif
 
 all: $(program_NAME) deploy-libs
 
-$(program_NAME): $(program_OBJS)
+$(program_NAME): ../include/version.h $(program_OBJS)
 	test -d $(TARGET) || mkdir $(TARGET)
 	$(CC) $(CFLAGS) $(program_OBJS) -o $(TARGET)/$(program_NAME)
 
@@ -29,6 +30,10 @@ deploy-libs:
 	cp $(program_OBJS) $(LIBDIR)
 	$(RM) $(LIBDIR)/httpd.o
 
+../include/version.h:
+	printf "#define VERSION \"%d.%d.%d (%s)\"\n\n" 0 0 $(BUILDS) $(UNAME) > ../include/version.h
+
 clean:
 	$(RM) $(program_NAME) $(program_OBJS) \#*\# *~
 	$(RM) $(TARGET)/$(program_NAME)
+	$(RM) ../include/version.h
