@@ -158,7 +158,8 @@ uint8_t
 send_response(int peerfd, char *msg_buf, char *rtrv_buffer, uint16_t response_code, struct request *req)
 {
   char		msg_body  [HTTP_BODY_LEN + 1];
-  uint8_t		error = 0;
+  char          server_name_buf [128];
+  uint8_t	error = 0;
 
   _finalise_message_body(msg_body, req, rtrv_buffer, response_code);
 
@@ -169,7 +170,6 @@ send_response(int peerfd, char *msg_buf, char *rtrv_buffer, uint16_t response_co
   }
   strncat(msg_buf, "Connection: close\r\n", HTTP_HEAD_LEN);
   strncat(msg_buf, "Content-Type: application/json; charset=utf-8\r\n", HTTP_HEAD_LEN);
-  char * server_name_buf[128];
   sprintf(server_name_buf, "Server: Pushy/%s\r\n", VERSION);
   strncat(msg_buf, server_name_buf, HTTP_HEAD_LEN);
 

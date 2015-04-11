@@ -47,13 +47,13 @@ init_server(void)
 {
   int		sockfd;
   struct sockaddr_in local_addr;
+  char          json_buf [128];
 
   log_init();
   cache_init();
 
-  char *buf[128];
-  sprintf(buf, "{\"version\":\"%s\"}", VERSION);
-  cache_add("/SYSTEM", buf);
+  sprintf(json_buf, "{\"version\":\"%s\"}", VERSION);
+  cache_add("/SYSTEM", json_buf);
 
   if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     handle_error("socket");
