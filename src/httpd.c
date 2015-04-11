@@ -52,7 +52,7 @@ init_server(void)
   log_init();
   cache_init();
 
-  sprintf(json_buf, "{\"version\":\"%s\"}", VERSION);
+  sprintf(json_buf, "{\"version\":\"%s\",\"name\":\"Pushy\"}", VERSION);
   cache_add("/SYSTEM", json_buf);
 
   if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
