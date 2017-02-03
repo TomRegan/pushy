@@ -47,8 +47,8 @@ struct record {
 };
 
 struct cache {
-	size_t		size;
-	struct record	*keys [CACHE_KEYS];
+    size_t          size;
+    struct record   *keys [CACHE_KEYS];
 };
 
 /**
@@ -108,7 +108,7 @@ cache_clear(void);
 size_t
 cache_size(void);
 
-struct cache	CACHE;
-sem_t		*CACHE_LOCK;
+struct cache CACHE;
+sem_t        *CACHE_LOCK;
 
 #endif /* CACHE_H */

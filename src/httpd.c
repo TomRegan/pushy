@@ -28,12 +28,13 @@
 void
 _shutdown_hook(int ignored)
 {
-  /*
-   * serialize the cache
-   */
-  puts("\rShutting down pushy");
-  exit(0);
+    /*
+     * serialize the cache
+     */
+    puts("\rShutting down pushy");
+    exit(0);
 }
+
 
 /**
  * init_server
@@ -45,34 +46,35 @@ _shutdown_hook(int ignored)
 int
 init_server(void)
 {
-  int		sockfd;
-  struct sockaddr_in local_addr;
-  char          json_buf [128];
+    int                sockfd;
+    struct sockaddr_in local_addr;
+    char               json_buf [128];
 
-  log_init();
-  cache_init();
+    log_init();
+    cache_init();
 
-  sprintf(json_buf, "{\"version\":\"%s\",\"name\":\"Pushy\"}", VERSION);
-  cache_add("/SYSTEM", json_buf);
+    sprintf(json_buf, "{\"version\":\"%s\",\"name\":\"Pushy\"}", VERSION);
+    cache_add("/SYSTEM", json_buf);
 
-  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    handle_error("socket");
-  }
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+        handle_error("socket");
+    }
 
-  bzero(&local_addr, sizeof(struct sockaddr_in));
-  local_addr.sin_family = AF_INET;
-  local_addr.sin_port = htons(PORT);
-  local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    bzero(&local_addr, sizeof(struct sockaddr_in));
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_port = htons(PORT);
+    local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  if ((bind(sockfd, (struct sockaddr *)&local_addr,
-	    sizeof(struct sockaddr_in))) == -1) {
-    handle_error("bind");
-  }
-  if (listen(sockfd, BACKLOG) == -1) {
-    handle_error("listen");
-  }
-  return sockfd;
+    if ((bind(sockfd, (struct sockaddr *)&local_addr,
+              sizeof(struct sockaddr_in))) == -1) {
+        handle_error("bind");
+    }
+    if (listen(sockfd, BACKLOG) == -1) {
+        handle_error("listen");
+    }
+    return sockfd;
 }
+
 
 /**
  * accept_request
@@ -87,45 +89,46 @@ init_server(void)
 void
 accept_request(int peerfd, struct sockaddr_in *peer_addr)
 {
-  char            msg_buffer [HTTP_RESPONSE_LEN + 1];
-  char            rtrv_buffer [HTTP_BODY_LEN + 1];
-  struct request  *req = NULL;
-  int             nbytes = 0;
-  uint16_t        response_code;
+    char            msg_buffer [HTTP_RESPONSE_LEN + 1];
+    char            rtrv_buffer [HTTP_BODY_LEN + 1];
+    struct request  *req = NULL;
+    int             nbytes = 0;
+    uint16_t        response_code;
 
-  if ((req = malloc(sizeof (struct request))) == NULL) {
-    return;
-  }
-  bzero(req, sizeof (struct request));
-  log_ln(MEM_DEBUG, "allocated %zuB for request\n", sizeof (struct request));
-
-  while ((nbytes = read_request(peerfd, req)) > 0) {
-    log_conn(FINE, peer_addr, ">>> %s\n", req->uri);
-    log_ln(FINER, "read %i bytes\n", nbytes);
-    response_code = service_request(req, rtrv_buffer, HTTP_BODY_LEN);
-    send_response(peerfd, msg_buffer, rtrv_buffer, response_code, req);
-    if (nbytes) {
-      log_conn(FINE, peer_addr, "<<< %s\n", msg_buffer);
+    if ((req = malloc(sizeof (struct request))) == NULL) {
+        return;
     }
-  }
+    bzero(req, sizeof (struct request));
+    log_ln(MEM_DEBUG, "allocated %zuB for request\n", sizeof (struct request));
 
-  if (nbytes == ECONNRST) {
-    log_conn(FINE, peer_addr, "connection reset by client\n");
-  } else if (nbytes == EREADHEAD) {
-    log_ln(ERROR, "reading request header: 0x%02x\n", (int) abs(nbytes));
-  } else if (nbytes == ESOCKERR) {
-    log_ln(ERROR, "reading from socket: 0x%02x\n", (int) abs(nbytes));
-  }
+    while ((nbytes = read_request(peerfd, req)) > 0) {
+        log_conn(FINE, peer_addr, ">>> %s\n", req->uri);
+        log_ln(FINER, "read %i bytes\n", nbytes);
+        response_code = service_request(req, rtrv_buffer, HTTP_BODY_LEN);
+        send_response(peerfd, msg_buffer, rtrv_buffer, response_code, req);
+        if (nbytes) {
+            log_conn(FINE, peer_addr, "<<< %s\n", msg_buffer);
+        }
+    }
 
-  if (req->body != NULL) {
-    free(req->body);
-    log_ln(MEM_DEBUG, "freed data buffer\n");
-  }
-  free(req);
-  log_ln(MEM_DEBUG, "freed request\n");
+    if (nbytes == ECONNRST) {
+        log_conn(FINE, peer_addr, "connection reset by client\n");
+    } else if (nbytes == EREADHEAD) {
+        log_ln(ERROR, "reading request header: 0x%02x\n", (int) abs(nbytes));
+    } else if (nbytes == ESOCKERR) {
+        log_ln(ERROR, "reading from socket: 0x%02x\n", (int) abs(nbytes));
+    }
 
-  return;
+    if (req->body != NULL) {
+        free(req->body);
+        log_ln(MEM_DEBUG, "freed data buffer\n");
+    }
+    free(req);
+    log_ln(MEM_DEBUG, "freed request\n");
+
+    return;
 }
+
 
 /**
  * serve_forever
@@ -139,60 +142,59 @@ accept_request(int peerfd, struct sockaddr_in *peer_addr)
 int
 serve_forever(int sockfd)
 {
-  int		peerfd, pid;
-  socklen_t	sin_size = sizeof(struct sockaddr_in);
-  struct sockaddr_in peer_addr;
+    int                peerfd, pid;
+    socklen_t          sin_size = sizeof(struct sockaddr_in);
+    struct sockaddr_in peer_addr;
 
-  log_ln(INFO, "accepting connections on %i\n", PORT);
+    log_ln(INFO, "accepting connections on %i\n", PORT);
 
-  while (1) {
+    while (1) {
 
-    bzero(&peer_addr, sizeof(struct sockaddr_in));
-    if ((peerfd = accept(sockfd, (struct sockaddr *)&peer_addr,
-			 (socklen_t *) & sin_size)) == -1) {
-      /*
-       * TODO:
-       * Introducing semaphores has created an issue where
-       * EINTR is raised somewhere, and causes accept
-       * to fail. This needs investigating.
-       */
-      if (errno == EINTR) {
-	continue;
-      }
-      handle_error("accept");
-    } else {
-      if ((pid = fork()) == 0) {
-	close(sockfd);
-	log_conn(FINE, &peer_addr, "connected\n");
-	accept_request(peerfd, &peer_addr);
-	log_conn(FINE, &peer_addr, "done serving request\n");
-	exit(0);
-      }
-      log_ln(DEBUG, "forked process %i\n", pid);
-      close(peerfd);
+        bzero(&peer_addr, sizeof(struct sockaddr_in));
+        if ((peerfd = accept(sockfd, (struct sockaddr *)&peer_addr,
+                             (socklen_t *) & sin_size)) == -1) {
+            /*
+             * TODO:
+             * Introducing semaphores has created an issue where
+             * EINTR is raised somewhere, and causes accept
+             * to fail. This needs investigating.
+             */
+            if (errno == EINTR) {
+                continue;
+            }
+            handle_error("accept");
+        } else {
+            if ((pid = fork()) == 0) {
+                close(sockfd);
+                log_conn(FINE, &peer_addr, "connected\n");
+                accept_request(peerfd, &peer_addr);
+                log_conn(FINE, &peer_addr, "done serving request\n");
+                exit(0);
+            }
+            log_ln(DEBUG, "forked process %i\n", pid);
+            close(peerfd);
+        }
     }
-  }
-
-  return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 int
 httpd(int argc, char *argv[])
 {
-  int		sockfd;
+    int        sockfd;
 
-  printf("Pushy/%s starting\n", VERSION);
+    printf("Pushy/%s starting\n", VERSION);
 
-  signal(SIGINT, _shutdown_hook);
+    signal(SIGINT, _shutdown_hook);
 
-  sockfd = init_server();
-  serve_forever(sockfd);
+    sockfd = init_server();
+    serve_forever(sockfd);
 
-  return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 int
 main(int argc, char *argv[])
 {
-  return httpd(argc, argv);
+    return httpd(argc, argv);
 }

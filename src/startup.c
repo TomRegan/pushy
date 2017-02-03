@@ -7,21 +7,21 @@
 struct
 configuration
 {
-	char		*addr;
-	uint16_t	port;
+    char     *addr;
+    uint16_t port;
 };
 
 struct configuration
 read_configuration(char *fn)
 {
-	char		*line_buf;
-	size_t		linecap = LINE_BUF_LEN;
-	struct configuration config;
-	FILE *fp = fopen(fn, "r");
+    char                 *line_buf;
+    size_t               linecap = LINE_BUF_LEN;
+    struct configuration config;
+    FILE                 *fp = fopen(fn, "r");
 
-	getline(&line_buf, &linecap, fp);
+    getline(&line_buf, &linecap, fp);
 
-	fclose(fp);
+    fclose(fp);
 
-	return config;
+    return config;
 }

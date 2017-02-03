@@ -26,8 +26,6 @@
 uint16_t
 service_request(struct request *req, char *rtrv_buf, const size_t len)
 {
-    int8_t          success = 0;
-
     if (req != NULL) {
         if (req->method == MGET) {
             if (cache_rtrv(req->uri, rtrv_buf, len) == 0) {
@@ -41,23 +39,22 @@ service_request(struct request *req, char *rtrv_buf, const size_t len)
              * call to cache_add. I'm disabling this fttb.
              */
             /*
-        } else if (req->method == MPOST && req->body->buf != NULL) {
-            success = cache_add(req->uri, req->body->buf);
-            if (success == 0) {
-                (void) strcpy(rtrv_buf, "\"created\"");
-                return ROK;
-            } else if (success == 1) {
-                (void) strcpy(rtrv_buf, "\"updated\"");
-                return ROK;
-            } else {
-                return RINTERNAL;
-            }
+              } else if (req->method == MPOST && req->body->buf != NULL) {
+              success = cache_add(req->uri, req->body->buf);
+              if (success == 0) {
+              (void) strcpy(rtrv_buf, "\"created\"");
+              return ROK;
+              } else if (success == 1) {
+              (void) strcpy(rtrv_buf, "\"updated\"");
+              return ROK;
+              } else {
+              return RINTERNAL;
+              }
             */
         } else if (req->method == MUNKNOWN || req->method == MPOST) {
             log_ln(ERROR, "request method not implemented: 0x%x\n", req->method);
             return RNOTIMPLEMENTED;
         }
     }
-
     return RINTERNAL;
 }
